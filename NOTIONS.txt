@@ -1,0 +1,22 @@
+
+										FONCTIONS UTILES (NECESSAIRES)
+--------------------------------------------------------------------------------------------------
+SOCKET :
+
+Crée un point de communication nommé socket. ---> communication entre différents processus (locales ou réseau)
+
+int socket(int domain, int type, int protocol);
+
+domain :	domaine de communication --> donc local ou réseau
+			AF_UNIX / AF_LOCAL pour communication locale.
+			AF_INET / AF_INET6 pour iPv4/6
+
+type :		paramètre spécifie le type de socket
+			SOCK_STREAM : pour un socket de type flux (TCP).
+			SOCK_DGRAM : pour un socket de type datagramme (UDP).
+			SOCK_RAW : pour un socket brut, généralement utilisé pour des protocoles de bas niveau.
+
+protocol :	Protocole à utiliser avec le socket. Généralement mis à 0 pour utiliser le protocole par défaut.
+
+RETURN VALUE : un entier en cas de success sinon -1
+--------------------------------------------------------------------------------------------------

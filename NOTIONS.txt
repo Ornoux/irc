@@ -7,6 +7,9 @@ Crée un point de communication nommé socket. ---> communication entre différe
 
 int socket(int domain, int type, int protocol);
 
+
+
+
 domain :	domaine de communication --> donc local ou réseau
 			AF_UNIX / AF_LOCAL pour communication locale.
 			AF_INET / AF_INET6 pour iPv4/6
@@ -19,4 +22,78 @@ type :		paramètre spécifie le type de socket
 protocol :	Protocole à utiliser avec le socket. Généralement mis à 0 pour utiliser le protocole par défaut.
 
 RETURN VALUE : un entier en cas de success sinon -1
+
+
 --------------------------------------------------------------------------------------------------
+ setsockopt :
+
+ Permet de configurer les options d'une socket.
+
+int setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len);
+
+
+
+socket: L'identifiant de la socket à configurer. Il s'agit d'un descripteur de fichier retourné par une fonction comme socket().
+
+level:	Le niveau auquel l'option est définie. Les niveaux courants sont SOL_SOCKET pour les options générales de la socket et
+		des niveaux spécifiques au protocole comme IPPROTO_TCP pour les options TCP.
+
+option_name: Le nom de l'option à définir. Il existe de nombreuses options prédéfinies comme SO_REUSEADDR, SO_KEEPALIVE, SO_LINGER, etc.
+
+option_value: 	Un pointeur vers la valeur de l'option. Le type de cette valeur dépend de l'option spécifique.
+				Par exemple, pour des options booléennes, c'est généralement un entier.
+option_len: La taille en octets de la valeur de l'option.
+
+RETURN VALUE : 0 success -1 erreur
+
+--------------------------------------------------------------------------------------------------
+
+getsockname : obtenir l'adresse locale d'une socket --> verfier quelle adresse et quel port ont été attribués à une socket.
+
+int getsockname(int socket, struct sockaddr *address, socklen_t *address_len);
+socket: L'identifiant de la socket dont on veut obtenir l'adresse locale.
+		Il s'agit d'un descripteur de fichier retourné par une fonction comme socket().
+
+address: Un pointeur vers une structure sockaddr qui sera remplie avec l'adresse locale de la socket.
+		La structure exacte dépend du domaine de la socket (par exemple, sockaddr_in pour les sockets IPv4).
+
+address_len: Un pointeur vers la taille de la structure sockaddr.
+			Avant l'appel, ce pointeur doit contenir la taille de la structure sockaddr.
+			Après l'appel, il contiendra la taille de l'adresse retournée.
+
+RETURN VALUE : 0 success -1 erreur
+
+--------------------------------------------------------------------------------------------------
+
+bind : La fonction bind est utilisée pour assigner une adresse locale à un socket.  
+
+sckt est le socket auquel est assigné l'adresse.
+ 
+name est la structure à assigner au socket.  
+
+namelen est la taille de cette structure, généralement un sizeof fera l'affaire
+
+--------------------------------------------------------------------------------------------------
+
+getprotobyname envoie un pointeur vers cette structure : struct protoent
+
+
+
+Les structures "SOCKADDR_IN" et "PROTOENT" ont intégrées dans nos bibliothèques afin de gérer et configurer les connexions réseaux.
+
+La structure sockaddr_in : 
+
+struct sockaddr_in {
+    short            sin_family;   // Famille d'adresse, souvent AF_INET pour IPv4
+    unsigned short   sin_port;     // Numéro de port en ordre d'octets réseau
+    struct in_addr   sin_addr;     // Adresse IP
+    char             sin_zero[8];  // Remplissage pour que la structure soit de la même taille que sockaddr
+};
+
+Son utilisation : - la fonction bind() utilise les éléments de cette structure
+				  afin de lier une adresse IP et un numéro de port à une socket.
+
+				  - connect(), sendto(), rec() utilisent éga;ement sockaddr_in pour récupérer
+				  l'adresse du destinataire/expéditeur.
+
+				  - accept() utilise sockaddr_in pour récupérer l'adresse et le port du client connecté.

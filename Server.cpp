@@ -6,13 +6,15 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/04 19:15:48 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/05 19:42:54 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 // MEMBER FUNCTIONS
+
+bool _loop = true;
 
 Server::Server() : _port(0), _password("NULL")
 {
@@ -45,33 +47,62 @@ int	Server::getSocket()
 	return (this->_socket);
 }
 
-void	Server::setPassword(std::string password)
+void	Server::setPassword(char *pass)
 {
-	this->_password = password;
+	std::string tmp_pass(pass);
+	this->_password = tmp_pass;
 	return ;
 }
 
-int	Server::create_server(Server& myServer)
+int	Server::create_server(Server& myServer, char **av)
 {
 	struct protoent 	*proto;
 	struct sockaddr_in 	sin;
 	
-	proto = getprotobyname("tcp"); // OBTENIR LES INFORMATIONS DU PROTOCOLE TCP
+	proto = getprotobyname("tcp");
 	if (proto == 0)
 		return (-1);
-	myServer._socket = socket(PF_INET, SOCK_STREAM, proto->p_proto); // CREATION DE LA SOCKET : PF_INET --> iPv4, type de socket SOCK_STREAM
+	myServer.setPort(atoi(av[1]));
+	myServer.setPassword(av[2]);
+	myServer._socket = socket(PF_INET, SOCK_STREAM, proto->p_proto);
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons(myServer._port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	bind(myServer._socket, (const struct sockaddr*)&sin, sizeof(sin)); //associe un nom a une socket
+	bind(myServer._socket, (const struct sockaddr*)&sin, sizeof(sin));
 	
 	listen(myServer._socket, 1);
 	return (0);
 }
 
+void Server::principal_loop(Server& myServer, Client& myClient)
+{
+	accept_client(myServer, myClient);
+	while (_loop == true)
+	{
+		std::cout << "test";
+		
+	}
+	return ;
+}
+
+void Server::accept_client(Server& myServer, Client& myClient)
+{
+	unsigned int	 	cslen;
+	struct sockaddr_in	csin;
+	myClient.setSocket(accept(myServer.getSocket(), (struct sockaddr*)&csin, &cslen));
+	return ;
+}
+
+void Server::check_signal(void)
+{
+	signal(SIGINT, signal_action);
+	return ;
+}
+
 void Server::close_server(Server& myServer)
 {
 	close(myServer._socket);
+	return ;
 }
 
 // OTHER FUNCTIONS
@@ -104,4 +135,11 @@ int base_parsing(int argc, char **argv)
 	}
 	else
 		return (0);
+}
+
+void	signal_action(int s)
+{
+	(void)s;
+	_loop = false;
+	return ;
 }

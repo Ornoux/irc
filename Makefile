@@ -6,7 +6,7 @@
 #    By: npatron <npatron@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/03 16:53:15 by npatron           #+#    #+#              #
-#    Updated: 2024/07/04 14:57:54 by npatron          ###   ########.fr        #
+#    Updated: 2024/07/05 16:02:51 by npatron          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,6 +14,7 @@ NAME = ircserv
 
 SRC = main.cpp \
 	  Server.cpp \
+	  Client.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 

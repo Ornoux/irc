@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/05 19:42:54 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/06 00:13:21 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,7 @@ void Server::principal_loop(Server& myServer, Client& myClient)
 	accept_client(myServer, myClient);
 	while (_loop == true)
 	{
-		std::cout << "test";
-		
+		check_signal();	
 	}
 	return ;
 }
@@ -141,5 +140,6 @@ void	signal_action(int s)
 {
 	(void)s;
 	_loop = false;
+	std::cout << "OUI LE CONTROLE C" << std::endl;
 	return ;
 }

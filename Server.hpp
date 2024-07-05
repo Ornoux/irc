@@ -6,13 +6,12 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/05 19:43:01 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/06 00:08:23 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "Client.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -23,12 +22,13 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <csignal>
-
+#include "Client.hpp"
 #define BAD_ARGS "To run IRC, you need <port> and <password>, like : ./ircserv <port> <password>\n"
 #define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
 #define PROBLEM_CREATING_SERV "Impossible to create server\n"
 
 extern bool _loop;
+
 
 class Server
 {

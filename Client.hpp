@@ -6,11 +6,14 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 00:07:27 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/06 16:52:39 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+#include <string>
+#include <iostream>
 
 class Client
 {
@@ -18,10 +21,28 @@ class Client
 			Client();
 			~Client();
 			
-			int	getSocket(void);
+			int	getSocket(void) const;
 			void setSocket(int sock);
+			
+			std::string getNick(void) const;
+			void		setNick(std::string nick);
+
+			std::string getRealName(void) const;
+			void		setRealName(std::string nick);
+
+			std::string getUser(void) const;
+			void		setUser(std::string nick);
+
+			int			getId(void) const;
+			void		setId(int id);
+	
 
 	private:
+			int				_id;
 			int		_socket;
-	
+			std::string	_nickname;
+			std::string	_username;
+			std::string	_realname;
 };
+
+std::ostream& operator<<(std::ostream& o, const Client& rhs);

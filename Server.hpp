@@ -5,14 +5,13 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/07/06 18:41:14 by npatron          ###   ########.fr       */
-=======
-/*   Updated: 2024/07/06 18:39:05 by isouaidi         ###   ########.fr       */
->>>>>>> c4b52de (1)
+/*   Created: 2024/07/06 19:40:22 by isouaidi          #+#    #+#             */
+/*   Updated: 2024/07/06 19:40:23 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
+
 
 #pragma once
 
@@ -33,7 +32,6 @@
 #define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
 #define PROBLEM_CREATING_SERV "Impossible to create server\n"
 #define BAD_PORT "Port should be between 1 and 65536\n"
-
 extern bool _loop;
 
 class Server

@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/07/06 18:40:42 by npatron          ###   ########.fr       */
+=======
+/*   Updated: 2024/07/06 18:44:35 by isouaidi         ###   ########.fr       */
+>>>>>>> c4b52de (1)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,6 +252,15 @@ int	valid_port(char *argv)
 	return (0);
 }
 
+int	int_max(char *str)
+{
+	int digits;
+	digits = atoi(str);
+	if (digits < 1 || digits > 65535)
+		return 1;
+	return 0;
+}
+
 int base_parsing(int argc, char **argv)
 {
 	if (argc != 3)
@@ -260,7 +273,11 @@ int base_parsing(int argc, char **argv)
 		std::cout << INVALID_PORT;
 		return (-1);
 	}
-	else
+	else if(int_max(argv[1]) == 1)
+	{
+		std::cout << BAD_PORT;
+		return (-1);
+	}
 		return (0);
 }
 

@@ -3,35 +3,68 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: npatron <npatron@student.42.fr>            +#+  +:+       +#+         #
+#    By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/03 16:53:15 by npatron           #+#    #+#              #
-#    Updated: 2024/07/05 16:02:51 by npatron          ###   ########.fr        #
+#    Updated: 2024/07/06 19:24:18 by isouaidi         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
+SRCS =  main.cpp Client.cpp Server.cpp Utils.cpp\
+					
+OBJS = $(SRCS:.cpp=.o)
+
 NAME = ircserv
+CC = c++
+CFLAGS = -Wall -Wextra  -Werror -std=c++98
+RM = rm -rf
 
-SRC = main.cpp \
-	  Server.cpp \
-	  Client.cpp \
+RESET = \033[0m
+GRAS = \033[1m
+ITALIQUE = \033[3m
+SOULIGN = \033[4m
+UP = \033[A
+BLINK = \033[6m
 
-OBJ = $(SRC:.cpp=.o)
+YEL = \033[38;5;220m
+ORANGE = \033[38;5;216m
+BLEU =  \033[38;5;27m 
+DARKBLUE = \033[38;5;21m
+RED = \033[38;5;130m
+RED1 = \033[38;5;196m
+GREEN1 =\033[38;5;46m
+GREEN = \033[38;5;85m
 
-CXXFLAGS = -Wall -Wextra -Werror -g -std=c++98
+FICH_COUNT = 0
+NBR_TOT_FICHIER = 18
+NBR_COMPILER = ${shell expr 100 \* ${FICH_COUNT} / ${NBR_TOT_FICHIER}}
+BAR =  ${shell expr 23 \* ${FICH_COUNT} / ${NBR_TOT_FICHIER}}
 
-all: $(NAME)
 
-$(NAME): $(OBJ)
-	c++ $(CXXFLAGS) -o $(NAME) $(OBJ)
+${MAIN_PATH}%.o:%.cpp 
+	@${eval FICH_COUNT = ${shell expr ${FICH_COUNT} + 1}}
+	@${CC} ${CFLAGS} -c -I . $< -o ${<:.cpp=.o} 
+	@echo ""
+	@echo " ${GRAS}${RED1}-> COMPILATION EN COURS${RESET}${GRAS}${YEL}[IRC]${RESET}"
+	@printf " ${RED1}${GRAS}[${YEL}%-23.${BAR}s${RED1}] [%d/%d (%d%%)]${RESET}" "-----------------------" ${FICH_COUNT} ${NBR_TOT_FICHIER} ${NBR_COMPILER}
+	@echo "${UP}${UP}${UP}"
 
+all : ${NAME}
+
+
+${NAME}: ${OBJS}
+	@${CC} ${CFLAGS} ${OBJS} -o ${NAME} 
+	@echo "\n\n\n ${GRAS}${RED1}IRC EST COMPILÉ 👏${RESET}\n"
+	
 clean:
-	rm -f $(OBJ)
+	@${RM}  ${OBJS} 
+	@echo "${GREEN1}${GRAS}\tNETTOYAGE 🛁${RESET}"
+	@echo "${BLEU}${ITALIQUE} -les fichiers sont supprimés${RESET}"
 
 fclean: clean
-	rm -f $(NAME)
+	@${RM} ${NAME}
+	@echo "${BLEU}${ITALIQUE} -${NAME} est supprimê${RESET}"
 
 re: fclean all
 
-%.o: %.cpp
-	c++ $(CXXFLAGS) -c $< -o $@
+.PHONY: all clean fclean re

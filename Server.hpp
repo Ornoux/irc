@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/07/06 18:41:14 by npatron          ###   ########.fr       */
+=======
+/*   Updated: 2024/07/06 18:39:05 by isouaidi         ###   ########.fr       */
+>>>>>>> c4b52de (1)
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +32,9 @@
 #define BAD_ARGS "To run IRC, you need <port> and <password>, like : ./ircserv <port> <password>\n"
 #define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
 #define PROBLEM_CREATING_SERV "Impossible to create server\n"
+#define BAD_PORT "Port should be between 1 and 65536\n"
 
 extern bool _loop;
-
 
 class Server
 {
@@ -72,3 +76,5 @@ class Server
 int	valid_port(char *argv);
 int	base_parsing(int argc, char **argv);
 void	signal_action(int s);
+int	int_max(char *str);
+

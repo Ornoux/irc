@@ -1,30 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 15:37:09 by isouaidi         ###   ########.fr       */
+/*   Created: 2024/07/06 16:15:47 by isouaidi          #+#    #+#             */
+/*   Updated: 2024/07/06 16:16:44 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#include "Client.hpp"
 
-#include "Server.hpp"
+#include <iostream>
 
-class Client
-{
-	public:
-			Client();
-			~Client();
-			
-			int	getSocket(void);
-			void setSocket(int sock);
-
-	private:
-			int		_socket;
-			// void	*stock;
-	
-};
+void print_amazing();

@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 17:56:51 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 18:41:48 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 12:34:23 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 int	main(int argc, char **av)
 {
 	Server	myServer;
-	
+	Client	myClient;
 	if (base_parsing(argc, av) == -1)
 		return (0);
 	if (myServer.create_server(myServer, av) == -1)
@@ -24,9 +24,9 @@ int	main(int argc, char **av)
 		std::cout << PROBLEM_CREATING_SERV;
 		return (0);
 	}
-	myServer.principal_loop(myServer, myServer.getVector());
-	//close(myClient.getSocket());
-	myServer.close_server(myServer);
+	myServer.principal_loop(myClient);
+	myServer.disconnect_clients_from_serv();
+	myServer.close_server();
 	return (0);
 }
 

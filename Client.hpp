@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 16:52:39 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 13:48:09 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,12 +33,7 @@ class Client
 			std::string getUser(void) const;
 			void		setUser(std::string nick);
 
-			int			getId(void) const;
-			void		setId(int id);
-	
-
 	private:
-			int				_id;
 			int		_socket;
 			std::string	_nickname;
 			std::string	_username;

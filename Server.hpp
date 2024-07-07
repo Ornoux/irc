@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 18:41:14 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 13:40:26 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,30 +41,36 @@ class Server
 			void		 setPort(unsigned int port);
 
 			std::string getPassword();
+			
 			int			getSocket();
-
+			void		setSocket(int sock);
+			
 			std::vector<Client> getVector();
 			void		setVector(std::vector<Client> clientList);
 			
 			void		setPassword(char *pass);
 			
 			int			create_server(Server& myServer, char **av);
-			void		close_server(Server& mySever, std::vector<Client> vectorClient);
-			void		principal_loop(Server& myServer, std::vector<Client> vectorClient);
+			void		close_server();
+			void		principal_loop(Client& myClient);
 			void		check_signal(void);
-			void		accept_client(Server& myServer, std::vector<Client> vectorClient);
-			void		is_a_valid_client(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_pass(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_nickname(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_userline(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_realname(Server& myServer, std::vector<Client> vectorClient);
+			void		accept_client(Client& myClient);
+			void		is_a_valid_client(Client& myClient);
+			void		client_valid_pass(Client& myClient);
+			void		client_valid_nickname(Client& myClient);
+			void		client_valid_userline(Client& myClient);
+			void		client_valid_realname(Client& myClient);
+
+			void		disconnect_clients_from_serv();
+
+			void		print_client_vector();
 			
 	private:
 			unsigned int	_port;
 			int				_socket;
 			std::string		_password;
 			std::vector<Client> _clientList;
-			int				_clientsConnected;
+			int				_nbClients;
 };
 
 // UTILS

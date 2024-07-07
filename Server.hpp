@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 13:40:26 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 17:29:15 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <csignal>
-#include <vector>
+#include <map>
+#include <iterator>
 #include "Client.hpp"
 #define BAD_ARGS "To run IRC, you need <port> and <password>, like : ./ircserv <port> <password>\n"
 #define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
@@ -64,12 +65,13 @@ class Server
 			void		disconnect_clients_from_serv();
 
 			void		print_client_vector();
+			void		check_clients_here();
 			
 	private:
 			unsigned int	_port;
 			int				_socket;
 			std::string		_password;
-			std::vector<Client> _clientList;
+			std::map<int, Client> _clientList;
 			int				_nbClients;
 };
 

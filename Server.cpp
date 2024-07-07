@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 15:18:04 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 17:32:29 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,18 +68,6 @@ void	Server::setSocket(int sock)
 	return ;
 }
 
-// VECTOR
-
-void	Server::setVector(std::vector<Client> vectorClient)
-{
-	this->_clientList = vectorClient;
-}
-
-std::vector<Client>	Server::getVector(void)
-{
-	return (this->_clientList);
-}
-
 int	Server::create_server(Server& myServer, char **av)
 {
 	struct protoent 	*proto;
@@ -102,20 +90,48 @@ int	Server::create_server(Server& myServer, char **av)
 
 void Server::principal_loop(Client& myClient)
 {
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	
 	while (_loop == true)
 	{
 		fd_set readfds;
 		FD_ZERO(&readfds);
 		FD_SET(_socket, &readfds);
-		select(_socket + 1, &readfds, NULL, NULL, NULL);
-		if (FD_ISSET(_socket, &readfds))
+		if (select(_socket + 1, &readfds, NULL, NULL, &timeout) > 0 && FD_ISSET(_socket, &readfds))
 		{
 			accept_client(myClient);
 			is_a_valid_client(myClient);
 		}
-		check_signal();
+		else
+		{
+			check_clients_here();
+			check_signal();
+		}
 	}
 	return ;
+}
+
+void Server::check_clients_here()
+{
+	char	buf[1024];
+
+	if (_nbClients > 0)
+	{
+		for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+		{
+			if (recv(it, buf, sizeof(buf), MSG_PEEK) <= 0)
+			{
+				std::cout << "Client " << _clientList[i].getUser() << " disconnected" << std::endl;
+				close(_clientList[i].getSocket());
+				_clientList.erase(_clientList.begin() + i);
+				_nbClients--;
+			}
+		}
+	}
+	else
+		return ;
 }
 
 void Server::accept_client(Client& myClient)
@@ -135,7 +151,7 @@ void Server::is_a_valid_client(Client& myClient)
 		client_valid_nickname(myClient);
 		client_valid_userline(myClient);
 		client_valid_realname(myClient);
-		_clientList.push_back(myClient);
+		_clientList[myClient.getSocket()] = myClient;
 		_nbClients++;
 		break ;
 	}
@@ -241,34 +257,34 @@ void Server::close_server()
 	return ;
 }
 
-void Server::disconnect_clients_from_serv()
-{
-	int count = 0;
+// void Server::disconnect_clients_from_serv()
+// {
+// 	int count = 0;
 
-	for (int i = 0; count != _nbClients; i++)
-	{
-		if (_clientList[i].getSocket())
-		{
-			std::cout << _clientList[i].getNick() << " disconnected" << std::endl;
-			close(_clientList[i].getSocket());
-			count++;
-			_nbClients--;
-			std::cout << "Client connected : " << _nbClients << std::endl;
-		}
-	}
-	return ;
-}
+// 	for (int i = 0; count != _nbClients; i++)
+// 	{
+// 		if (_clientList[i].getSocket())
+// 		{
+// 			std::cout << _clientList[i].getNick() << " disconnected" << std::endl;
+// 			close(_clientList[i].getSocket());
+// 			count++;
+// 			_nbClients--;
+// 			std::cout << "Client connected : " << _nbClients << std::endl;
+// 		}
+// 	}
+// 	return ;
+// }
 
 void Server::print_client_vector()
 {
 	for (int i = 0; i != _nbClients; i++)
 	{
-		std::cout << "---------------------" << std::endl;
-		std::cout << "SOCKET : " << _clientList[i].getSocket() << std::endl;
-		std::cout << "USER : " << _clientList[i].getUser() << std::endl;
-		std::cout << "NICK : " << _clientList[i].getNick() << std::endl;
-		std::cout << "REALNAME : " << _clientList[i].getRealName() << std::endl;
-		std::cout << "---------------------" << std::endl;
+		std::cout << "|---------------------" << std::endl;
+		std::cout << "| SOCKET : " << _clientList[i].getSocket() << std::endl;
+		std::cout << "| USER : " << _clientList[i].getUser() << std::endl;
+		std::cout << "| NICK : " << _clientList[i].getNick() << std::endl;
+		std::cout << "| REALNAME : " << _clientList[i].getRealName() << std::endl;
+		std::cout << "|---------------------" << std::endl;
 	}
 	return ;
 }
@@ -308,6 +324,7 @@ int base_parsing(int argc, char **argv)
 void	signal_action(int s)
 {
 	(void)s;
+	std::cout << "CONTROLE C VALIDE" << std::endl;
 	_loop = false;
 	return ;
 }

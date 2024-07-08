@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/08 10:15:35 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/08 16:17:23 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,10 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <poll.h>
 #include <string>
 #include <cstring>
+#include <fcntl.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <csignal>

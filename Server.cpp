@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/08 10:43:24 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/08 16:38:32 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,25 +90,24 @@ int	Server::create_server(Server& myServer, char **av)
 
 void Server::principal_loop(Client& myClient)
 {
-	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
+	int timeout_ms = 50000000000;
+	
+	struct pollfd fds[1];
+	fds[0].fd = _socket;
+	fds[0].events = POLLIN;
 	
 	while (_loop == true)
 	{
-		fd_set readfds;
-		FD_ZERO(&readfds);
-		FD_SET(_socket, &readfds);
-		if (select(_socket + 1, &readfds, NULL, NULL, &timeout) > 0 && FD_ISSET(_socket, &readfds))
+		int connexion = poll(fds, 1, timeout_ms);
+		if (connexion < 0)
+			std::cout << "Error";
+		else if (fds[0].revents & POLLIN)
 		{
 			accept_client(myClient);
 			is_a_valid_client(myClient);
 		}
-		else
-		{
-			check_clients_here();
-			check_signal();
-		}
+		check_clients_here();
+		check_signal();
 	}
 	return ;
 }
@@ -135,7 +134,16 @@ void Server::accept_client(Client& myClient)
 {
 	unsigned int	 	cslen;
 	struct sockaddr_in	csin;
-	myClient.setSocket(accept(getSocket(), (struct sockaddr*)&csin, &cslen));
+
+	int	socket_client;
+	socket_client = accept(_socket, (struct sockaddr*)&csin, &cslen);
+	if (socket_client < 0)
+		std::cout << "Error" << std::endl;
+	else
+	{
+		fcntl(socket_client, F_SETFL, O_NONBLOCK);
+		myClient.setSocket(socket_client);
+	}
 	return ;
 }
 

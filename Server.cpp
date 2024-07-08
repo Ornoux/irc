@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 17:32:29 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/08 10:43:24 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,22 +116,19 @@ void Server::principal_loop(Client& myClient)
 void Server::check_clients_here()
 {
 	char	buf[1024];
-
-	if (_nbClients > 0)
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
 	{
-		for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+		std::cout << "HERE" << std::endl;
+		if (recv(it->first, buf, sizeof(buf), MSG_PEEK) <= 0)
 		{
-			if (recv(it, buf, sizeof(buf), MSG_PEEK) <= 0)
-			{
-				std::cout << "Client " << _clientList[i].getUser() << " disconnected" << std::endl;
-				close(_clientList[i].getSocket());
-				_clientList.erase(_clientList.begin() + i);
-				_nbClients--;
-			}
+			std::cout << "Client " << it->second.getUser() << " disconnected" << std::endl;
+			close(it->second.getSocket());
+			_clientList.erase(it);
+			_nbClients--;
+			return ;
 		}
 	}
-	else
-		return ;
+
 }
 
 void Server::accept_client(Client& myClient)
@@ -156,7 +153,7 @@ void Server::is_a_valid_client(Client& myClient)
 		break ;
 	}
 	std::cout << "Numbers of clients connected : " << _nbClients << std::endl;
-	print_client_vector();
+	print_client_map();
 }
 
 void Server::client_valid_pass(Client& myClient)
@@ -275,15 +272,15 @@ void Server::close_server()
 // 	return ;
 // }
 
-void Server::print_client_vector()
+void Server::print_client_map()
 {
-	for (int i = 0; i != _nbClients; i++)
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
 	{
 		std::cout << "|---------------------" << std::endl;
-		std::cout << "| SOCKET : " << _clientList[i].getSocket() << std::endl;
-		std::cout << "| USER : " << _clientList[i].getUser() << std::endl;
-		std::cout << "| NICK : " << _clientList[i].getNick() << std::endl;
-		std::cout << "| REALNAME : " << _clientList[i].getRealName() << std::endl;
+		std::cout << "| SOCKET : " << it->second.getSocket() << std::endl;
+		std::cout << "| USER : " << it->second.getUser() << std::endl;
+		std::cout << "| NICK : " << it->second.getNick() << std::endl;
+		std::cout << "| REALNAME : " << it->second.getRealName() << std::endl;
 		std::cout << "|---------------------" << std::endl;
 	}
 	return ;

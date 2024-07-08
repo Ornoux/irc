@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 17:29:15 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/08 10:15:35 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,6 @@ class Server
 			int			getSocket();
 			void		setSocket(int sock);
 			
-			std::vector<Client> getVector();
-			void		setVector(std::vector<Client> clientList);
 			
 			void		setPassword(char *pass);
 			
@@ -64,7 +62,7 @@ class Server
 
 			void		disconnect_clients_from_serv();
 
-			void		print_client_vector();
+			void		print_client_map();
 			void		check_clients_here();
 			
 	private:

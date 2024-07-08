@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 17:56:51 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 12:34:23 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/08 10:16:10 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int	main(int argc, char **av)
 		return (0);
 	}
 	myServer.principal_loop(myClient);
-	myServer.disconnect_clients_from_serv();
+	// myServer.disconnect_clients_from_serv();
 	myServer.close_server();
 	return (0);
 }

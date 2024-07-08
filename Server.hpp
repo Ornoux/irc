@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 19:40:22 by isouaidi          #+#    #+#             */
-/*   Updated: 2024/07/08 16:14:18 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/08 16:18:18 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class Server
 
 			void		print_client_map();
 			void		check_clients_here();
+			
 			
 	private:
 			unsigned int	_port;

@@ -49,7 +49,6 @@
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
-		"cstring": "cpp",
 		"ctime": "cpp",
 		"bitset": "cpp",
 		"chrono": "cpp",

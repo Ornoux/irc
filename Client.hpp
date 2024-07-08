@@ -6,9 +6,10 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 19:33:06 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/08 16:13:29 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #pragma once
 
@@ -33,12 +34,7 @@ class Client
 			std::string getUser(void) const;
 			void		setUser(std::string nick);
 
-			int			getId(void) const;
-			void		setId(int id);
-	
-
 	private:
-			int				_id;
 			int		_socket;
 			std::string	_nickname;
 			std::string	_username;

@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 19:40:22 by isouaidi          #+#    #+#             */
-/*   Updated: 2024/07/06 19:40:23 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/08 16:14:18 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <csignal>
-#include <vector>
+#include <map>
+#include <iterator>
 #include "Client.hpp"
 #define BAD_ARGS "To run IRC, you need <port> and <password>, like : ./ircserv <port> <password>\n"
 #define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
@@ -43,30 +44,35 @@ class Server
 			void		 setPort(unsigned int port);
 
 			std::string getPassword();
+			
 			int			getSocket();
-
-			std::vector<Client> getVector();
-			void		setVector(std::vector<Client> clientList);
+			void		setSocket(int sock);
+			
 			
 			void		setPassword(char *pass);
 			
 			int			create_server(Server& myServer, char **av);
-			void		close_server(Server& mySever, std::vector<Client> vectorClient);
-			void		principal_loop(Server& myServer, std::vector<Client> vectorClient);
+			void		close_server();
+			void		principal_loop(Client& myClient);
 			void		check_signal(void);
-			void		accept_client(Server& myServer, std::vector<Client> vectorClient);
-			void		is_a_valid_client(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_pass(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_nickname(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_userline(Server& myServer, std::vector<Client> vectorClient);
-			void		client_valid_realname(Server& myServer, std::vector<Client> vectorClient);
+			void		accept_client(Client& myClient);
+			void		is_a_valid_client(Client& myClient);
+			void		client_valid_pass(Client& myClient);
+			void		client_valid_nickname(Client& myClient);
+			void		client_valid_userline(Client& myClient);
+			void		client_valid_realname(Client& myClient);
+
+			void		disconnect_clients_from_serv();
+
+			void		print_client_map();
+			void		check_clients_here();
 			
 	private:
 			unsigned int	_port;
 			int				_socket;
 			std::string		_password;
-			std::vector<Client> _clientList;
-			int				_clientsConnected;
+			std::map<int, Client> _clientList;
+			int				_nbClients;
 };
 
 // UTILS

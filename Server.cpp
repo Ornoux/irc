@@ -6,9 +6,10 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 19:37:43 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/08 16:13:25 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 
 #include "Server.hpp"
@@ -17,7 +18,7 @@
 
 bool _loop = true;
 
-Server::Server() : _port(0), _password("NULL"), _clientsConnected(0)
+Server::Server() : _port(0), _password("NULL"), _nbClients(0)
 {
 	return ;
 }
@@ -63,16 +64,10 @@ int	Server::getSocket()
 	return (this->_socket);
 }
 
-// VECTOR
-
-void	Server::setVector(std::vector<Client> vectorClient)
+void	Server::setSocket(int sock)
 {
-	this->_clientList = vectorClient;
-}
-
-std::vector<Client>	Server::getVector(void)
-{
-	return (this->_clientList);
+	this->_socket = sock;
+	return ;
 }
 
 int	Server::create_server(Server& myServer, char **av)
@@ -95,47 +90,81 @@ int	Server::create_server(Server& myServer, char **av)
 	return (0);
 }
 
-void Server::principal_loop(Server& myServer)
+void Server::principal_loop(Client& myClient)
 {
-	accept_client(myServer);
-	is_a_valid_client(myServer);
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	
 	while (_loop == true)
 	{
-		check_signal();	
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		FD_SET(_socket, &readfds);
+		if (select(_socket + 1, &readfds, NULL, NULL, &timeout) > 0 && FD_ISSET(_socket, &readfds))
+		{
+			accept_client(myClient);
+			is_a_valid_client(myClient);
+		}
+		else
+		{
+			check_clients_here();
+			check_signal();
+		}
 	}
 	return ;
 }
 
-void Server::accept_client(Server& myServer)
+void Server::check_clients_here()
+{
+	char	buf[1024];
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		std::cout << "HERE" << std::endl;
+		if (recv(it->first, buf, sizeof(buf), MSG_PEEK) <= 0)
+		{
+			std::cout << "Client " << it->second.getUser() << " disconnected" << std::endl;
+			close(it->second.getSocket());
+			_clientList.erase(it);
+			_nbClients--;
+			return ;
+		}
+	}
+
+}
+
+void Server::accept_client(Client& myClient)
 {
 	unsigned int	 	cslen;
 	struct sockaddr_in	csin;
-	myClient.setSocket(accept(myServer.getSocket(), (struct sockaddr*)&csin, &cslen));
+	myClient.setSocket(accept(getSocket(), (struct sockaddr*)&csin, &cslen));
 	return ;
 }
 
-void Server::is_a_valid_client(Server& myServer)
+void Server::is_a_valid_client(Client& myClient)
 {
 	bool valid_client = false;
 	while (valid_client == false)
 	{
-		client_valid_pass(myServer, myClient);
-		client_valid_nickname(myServer, myClient);
-		client_valid_userline(myServer, myClient);
-		client_valid_realname(myServer, myClient);
+		client_valid_pass(myClient);
+		client_valid_nickname(myClient);
+		client_valid_userline(myClient);
+		client_valid_realname(myClient);
+		_clientList[myClient.getSocket()] = myClient;
+		_nbClients++;
 		break ;
 	}
-	std::cout << "Client connecté : \n" << myClient;
+	std::cout << "Numbers of clients connected : " << _nbClients << std::endl;
+	print_client_map();
 }
 
-void Server::client_valid_pass(Server& myServer)
+void Server::client_valid_pass(Client& myClient)
 {
-	(void)myServer._clientsConnected;
-	
+
 	char stock[1024];
 	int x = 0;
 	
-	std::string good_pass = "PASS " + myServer._password + "\r\n";
+	std::string good_pass = "PASS " + _password + "\r\n";
 	const char	*tmp_pass = good_pass.c_str();
 	std::string message = "Enter : 'PASS <realpass>'\n";
 	const char	*message_tmp = message.c_str();
@@ -149,10 +178,8 @@ void Server::client_valid_pass(Server& myServer)
 	}
 }
 
-void Server::client_valid_nickname(Server& myServer
-{
-	(void)myServer._clientsConnected;
-	
+void Server::client_valid_nickname(Client& myClient)
+{	
 	char stock[1024];
 	int x = 0;
 	
@@ -163,9 +190,9 @@ void Server::client_valid_nickname(Server& myServer
 	{
 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "NICK ", 5) == 0 && (stock[6] && isalnum(stock[6]) == 0))
+		if (strncmp(stock, "NICK ", 5) == 0)
 		{
-			std::string	nickname_tmp(stock + 6);
+			std::string	nickname_tmp(stock + 5);
 			std::cout << nickname_tmp << std::endl;
 			myClient.setNick(nickname_tmp);
 			break;
@@ -173,10 +200,8 @@ void Server::client_valid_nickname(Server& myServer
 	}
 }
 
-void Server::client_valid_userline(Server& myServer, std::vector<Client> _clientList)
+void Server::client_valid_userline(Client& myClient)
 {
-	(void)myServer._clientsConnected;
-	
 	char stock[1024];
 	int x = 0;
 	
@@ -187,9 +212,9 @@ void Server::client_valid_userline(Server& myServer, std::vector<Client> _client
 	{
 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "USER ", 5) == 0 && (stock[6] && isalnum(stock[6]) == 0))
+		if (strncmp(stock, "USER ", 5) == 0)
 		{
-			std::string	username_tmp(stock + 6);
+			std::string	username_tmp(stock + 5);
 			std::cout << username_tmp << std::endl;
 			myClient.setUser(username_tmp);
 			break;
@@ -197,10 +222,8 @@ void Server::client_valid_userline(Server& myServer, std::vector<Client> _client
 	}
 }
 
-void Server::client_valid_realname(Server& myServer, std::vector<Client> _clientList)
-{
-	(void)myServer._clientsConnected;
-	
+void Server::client_valid_realname(Client& myClient)
+{	
 	char stock[1024];
 	int x = 0;
 	
@@ -211,9 +234,9 @@ void Server::client_valid_realname(Server& myServer, std::vector<Client> _client
 	{
 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "REAL ", 5) == 0 && (stock[6] && isalnum(stock[6]) == 0))
+		if (strncmp(stock, "REAL ", 5) == 0)
 		{
-			std::string	realname_tmp(stock + 6);
+			std::string	realname_tmp(stock + 5);
 			std::cout << realname_tmp << std::endl;
 			myClient.setRealName(realname_tmp);
 			break;
@@ -227,9 +250,41 @@ void Server::check_signal(void)
 	return ;
 }
 
-void Server::close_server(Server& myServer)
+void Server::close_server()
 {
-	close(myServer._socket);
+	close(_socket);
+	return ;
+}
+
+// void Server::disconnect_clients_from_serv()
+// {
+// 	int count = 0;
+
+// 	for (int i = 0; count != _nbClients; i++)
+// 	{
+// 		if (_clientList[i].getSocket())
+// 		{
+// 			std::cout << _clientList[i].getNick() << " disconnected" << std::endl;
+// 			close(_clientList[i].getSocket());
+// 			count++;
+// 			_nbClients--;
+// 			std::cout << "Client connected : " << _nbClients << std::endl;
+// 		}
+// 	}
+// 	return ;
+// }
+
+void Server::print_client_map()
+{
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		std::cout << "|---------------------" << std::endl;
+		std::cout << "| SOCKET : " << it->second.getSocket() << std::endl;
+		std::cout << "| USER : " << it->second.getUser() << std::endl;
+		std::cout << "| NICK : " << it->second.getNick() << std::endl;
+		std::cout << "| REALNAME : " << it->second.getRealName() << std::endl;
+		std::cout << "|---------------------" << std::endl;
+	}
 	return ;
 }
 
@@ -281,6 +336,7 @@ int base_parsing(int argc, char **argv)
 void	signal_action(int s)
 {
 	(void)s;
+	std::cout << "CONTROLE C VALIDE" << std::endl;
 	_loop = false;
 	return ;
 }

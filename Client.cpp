@@ -6,13 +6,13 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/06 17:49:00 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/07 13:48:29 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client() : _id(0), _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL")
+Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL")
 {
 	return ;
 }
@@ -74,20 +74,10 @@ std::string Client::getRealName(void) const
 	return (this->_realname);
 }
 
-void Client::setId(int id)
-{
-	this->_id = id;
-}
-
-int Client::getId(void) const
-{
-	return (this->_id);
-}
 
 std::ostream& operator<<(std::ostream& o, const Client& rhs)
 {
 	std::cout << "--------------------------\n";
-	std::cout << "ID : " << rhs.getId() << std::endl;
 	std::cout << "NICK : " << rhs.getNick() << std::endl;
 	std::cout << "USER : " << rhs.getUser() << std::endl;
 	std::cout << "REALNAME : " << rhs.getRealName() << std::endl;

@@ -19,6 +19,7 @@
 #include "Utils.hpp"
 #include <ncurses.h>
 
+
 int	main(int argc, char **av)
 {
 	Server	myServer;

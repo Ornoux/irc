@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/09 18:18:13 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/09 18:31:57 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,6 @@
 #include <iterator>
 #include "Client.hpp"
 #include "Exceptions.hpp"
-
-#define BAD_ARGS "To run IRC, you need <port> and <password>, like : ./ircserv <port> <password>\n"
-#define INVALID_PORT "Invalid port: Port musts contains 5 digits [0 - 9]\n"
-#define PROBLEM_CREATING_SERV "Impossible to create server\n"
 
 class Server
 {
@@ -63,6 +59,11 @@ class Server
 			bool		isClientDisconnected(int fd);
 			void		SendDataToClient(int fd, std::string msg);
 			void		printClient(void);
+			
+			void		client_valid_realname(Client& myClient);
+			void		client_valid_nickname(Client& myClient);
+			void		client_valid_pass(Client& myClient);
+			void		client_valid_username(Client& myClient);
 
 	private:
 			unsigned int	_port;
@@ -77,3 +78,8 @@ class Server
 int		valid_port(char *argv);
 void	base_parsing(int argc, char **argv);
 void	signal_action(int s);
+int 	check_cara(char str);
+int		int_max(char *str);
+
+
+

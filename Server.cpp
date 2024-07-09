@@ -6,10 +6,12 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/09 18:15:20 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/09 18:32:42 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
+#include "Utils.hpp"
 #include "Server.hpp"
 
 // MEMBER FUNCTIONS
@@ -96,6 +98,7 @@ void    Server::loop_test(char **av, Client myClient)
 	int ret;
 	
 	launch_serv(av);
+	print_amazing();
 	std::cout << "Server launched" << std::endl;
 	while (true)
 	{
@@ -166,6 +169,85 @@ void	Server::SendDataToClient(int fd, std::string msg)
 	return ;
 }
 
+bool check_cara(char c, char *str){
+	std::string st1(str);
+	int i = 0;
+
+	while(str[i] != '\r')
+	{
+		if (str[i] == c){
+			std::cout << "ok = "<<i << std::endl;
+			return true;
+		}
+		i++;
+	}
+	return false;
+}
+
+void Server::client_valid_pass(Client& myClient)
+{
+
+	char stock[1024];
+	int x = 0;
+	
+	std::string good_pass ="PASS " + _password + "\r\n";
+	// const char	*tmp_pass = good_pass.c_str();
+	// std::string	stock0(stock);
+	std::string message = "Enter : 'PASS <realpass>'\n";
+	const char	*message_tmp = message.c_str();
+	
+	while (1)
+	{
+		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
+		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
+		stock[x - 1] = '\r';
+		stock[x ] = '\n';
+		stock[x + 1] = '\0';
+		std::string	stock0(stock);
+		std::cout << "GP " << good_pass << std::endl;
+		std::cout << "stock " << stock0 << std::endl;
+		// std::cout <<" x - 6 = " << x - 6 << std::endl;
+		// std::cout <<" x = " << x << std::endl;
+		//std::cout <<" len tmp =" << strlen(tmp_pass) << std::endl;
+		// std::cout <<" len stock =" << strlen(stock)<< std::endl;
+		// std::cout <<" len stock -5 =" << strlen(stock) - 5 << std::endl;
+		// std::cout << this->_password << std::endl;
+		// std::cout << " reslt " <<strncmp(tmp_pass, stock0, x - 6) << std::endl;
+		// if (strncmp(stock, "PASS ", 5) == 0 
+		// 	&& strncmp(tmp_pass, stock0, (strlen(tmp_pass))) == 0 
+		// 	&& ((strlen(stock) - 6) == strlen(tmp_pass)))
+		if (good_pass == stock0)
+				break;
+	}
+}
+
+void Server::client_valid_nickname(Client& myClient)
+{	
+	char stock[1024];
+	int x = 0;
+	
+	std::string message = "Enter : 'NICK <nickname>'\n";
+	const char	*message_tmp = message.c_str();
+	
+	while (1)
+	{
+		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
+		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
+		stock[x - 1] = '\r';
+		stock[x] = '\n';
+		stock[x + 1] = '\0';
+		// std::cout << "stock 2 " << x - 6 << std::endl;
+		// std::cout << "cara " << check_cara(' ', stock + 5)  << std::endl;
+		if (strncmp(stock, "NICK ", 5) == 0  
+			&& (check_cara(' ', stock + 5) == 0) && (x - 6)> 0)
+		{
+			std::string	nickname_tmp(stock + 5);
+			std::cout << nickname_tmp << std::endl;
+			myClient.setNick(nickname_tmp);
+			break;
+		}
+	}
+}
 
 void	Server::DeleteClientFromServ(int i)
 {
@@ -174,11 +256,66 @@ void	Server::DeleteClientFromServ(int i)
 	_clientVector.erase(_clientVector.begin() + i);
 }
 
+void Server::client_valid_username(Client& myClient)
+{
+	char stock[1024];
+	int x = 0;
+	
+	std::string message = "Enter : 'USER <username>'\n";
+	const char	*message_tmp = message.c_str();
+	
+	while (1)
+	{
+		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
+		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
+		stock[x - 1] = '\r';
+		stock[x] = '\n';
+		stock[x + 1] = '\0';
+		if (strncmp(stock, "USER ", 5) == 0 
+			&& (check_cara(' ', stock + 5) == 0) && (x - 6) > 0)
+		{
+			std::string	username_tmp(stock + 5);
+			std::cout << username_tmp << std::endl;
+			myClient.setUser(username_tmp);
+			break;
+		}
+	}
+}
+
+void Server::client_valid_realname(Client& myClient)
+{	
+	char stock[1024];
+	int x = 0;
+	
+	std::string message = "Enter : 'REAL <username>'\n";
+	const char	*message_tmp = message.c_str();
+	
+	while (1)
+	{
+		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
+		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
+		stock[x - 1] = '\r';
+		stock[x] = '\n';
+		stock[x + 1] = '\0';
+		if (strncmp(stock, "REAL ", 5) == 0 
+			&& (check_cara(' ', stock + 5) == 0) && (x - 6 ) > 0)
+		{
+			std::string	realname_tmp(stock + 5);
+			std::cout << realname_tmp << std::endl;
+			myClient.setRealName(realname_tmp);
+			break;
+		}
+	}
+}
+
 void Server::check_signal(void)
 {
 	signal(SIGINT, signal_action);
 	return ;
 }
+
+
+// OTHER FUNCTIONS
 
 void	signal_action(int s)
 {

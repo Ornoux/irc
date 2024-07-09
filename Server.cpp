@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/08 16:38:32 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/09 18:15:20 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,186 +68,110 @@ void	Server::setSocket(int sock)
 	return ;
 }
 
-int	Server::create_server(Server& myServer, char **av)
+void	Server::launch_serv(char **av)
 {
-	struct protoent 	*proto;
+    struct protoent 	*proto;
 	struct sockaddr_in 	sin;
-	
 	proto = getprotobyname("tcp");
 	if (proto == 0)
-		return (-1);
-	myServer.setPort(atoi(av[1]));
-	myServer.setPassword(av[2]);
-	myServer._socket = socket(PF_INET, SOCK_STREAM, proto->p_proto);
+		return ;
+	setPort(atoi(av[1]));
+	setPassword(av[2]);
+	_socket = socket(PF_INET, SOCK_STREAM, proto->p_proto);
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(myServer._port);
+	sin.sin_port = htons(_port);
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	bind(myServer._socket, (const struct sockaddr*)&sin, sizeof(sin));
+	bind(_socket, (const struct sockaddr*)&sin, sizeof(sin));
 	
-	listen(myServer._socket, 1);
-	return (0);
+	listen(_socket, 10);
 }
 
-void Server::principal_loop(Client& myClient)
+void    Server::loop_test(char **av, Client myClient)
 {
-	int timeout_ms = 50000000000;
+	fd_set readfds;
+	int max_sd;
+	int cs;
+	int connexion;
+	char buff[1024];
+	int ret;
 	
-	struct pollfd fds[1];
-	fds[0].fd = _socket;
-	fds[0].events = POLLIN;
-	
-	while (_loop == true)
+	launch_serv(av);
+	std::cout << "Server launched" << std::endl;
+	while (true)
 	{
-		int connexion = poll(fds, 1, timeout_ms);
+		FD_ZERO(&readfds);
+		FD_SET(_socket, &readfds);
+		max_sd = _socket;
+		for (size_t i = 0; i < _clientVector.size(); i++)
+		{
+			cs = _clientVector[i].getSocket();
+			if (cs > 0)
+				FD_SET(cs, &readfds);
+			if (cs > max_sd)
+				max_sd = cs;
+		}
+		connexion = select(max_sd + 1, &readfds, NULL, NULL, NULL);
 		if (connexion < 0)
-			std::cout << "Error";
-		else if (fds[0].revents & POLLIN)
+			throw(SelectError());
+		if (FD_ISSET(_socket, &readfds)) // RECOIT UNE CONNEXION
+			AddClientToVector(myClient);
+		for (size_t i = 0; i < _clientVector.size(); i++)
 		{
-			accept_client(myClient);
-			is_a_valid_client(myClient);
+			cs = _clientVector[i].getSocket();
+			if (FD_ISSET(cs, &readfds))
+			{
+				ret = recv(cs, buff, 1024, 0);
+				buff[ret] = '\0';
+				std::cout << buff << std::endl;
+				if (ret == 0)
+					DeleteClientFromServ(i);
+				else
+					SendDataToClient(cs, std::string(buff));
+			}
 		}
-		check_clients_here();
-		check_signal();
 	}
 	return ;
 }
 
-void Server::check_clients_here()
+void	Server::AddClientToVector(Client myClient)
 {
-	char	buf[1024];
-	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
-	{
-		std::cout << "HERE" << std::endl;
-		if (recv(it->first, buf, sizeof(buf), MSG_PEEK) <= 0)
-		{
-			std::cout << "Client " << it->second.getUser() << " disconnected" << std::endl;
-			close(it->second.getSocket());
-			_clientList.erase(it);
-			_nbClients--;
-			return ;
-		}
-	}
-
-}
-
-void Server::accept_client(Client& myClient)
-{
-	unsigned int	 	cslen;
 	struct sockaddr_in	csin;
-
-	int	socket_client;
+	unsigned int	 	cslen = sizeof(csin);
+	int socket_client;
+	
 	socket_client = accept(_socket, (struct sockaddr*)&csin, &cslen);
+	std::cout << socket_client;
 	if (socket_client < 0)
-		std::cout << "Error" << std::endl;
-	else
+		throw(AcceptError());
+	myClient.setSocket(socket_client);
+	_clientVector.push_back(myClient);
+	_nbClients++;
+	std::cout << "Client accepted" << std::endl;
+	return ;
+}
+
+void	Server::printClient()
+{
+	for (size_t i = 0; i < _clientVector.size(); i++)
 	{
-		fcntl(socket_client, F_SETFL, O_NONBLOCK);
-		myClient.setSocket(socket_client);
+		std::cout << "FD : " << _clientVector[i].getSocket() << std::endl;
+		
 	}
 	return ;
 }
 
-void Server::is_a_valid_client(Client& myClient)
+void	Server::SendDataToClient(int fd, std::string msg)
 {
-	bool valid_client = false;
-	while (valid_client == false)
-	{
-		client_valid_pass(myClient);
-		client_valid_nickname(myClient);
-		client_valid_userline(myClient);
-		client_valid_realname(myClient);
-		_clientList[myClient.getSocket()] = myClient;
-		_nbClients++;
-		break ;
-	}
-	std::cout << "Numbers of clients connected : " << _nbClients << std::endl;
-	print_client_map();
+	send(fd, msg.c_str(), msg.size(), 0);
+	return ;
 }
 
-void Server::client_valid_pass(Client& myClient)
+
+void	Server::DeleteClientFromServ(int i)
 {
-
-	char stock[1024];
-	int x = 0;
-	
-	std::string good_pass = "PASS " + _password + "\r\n";
-	const char	*tmp_pass = good_pass.c_str();
-	std::string message = "Enter : 'PASS <realpass>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, tmp_pass, x - 1) == 0)
-			break;
-	}
-}
-
-void Server::client_valid_nickname(Client& myClient)
-{	
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'NICK <nickname>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "NICK ", 5) == 0)
-		{
-			std::string	nickname_tmp(stock + 5);
-			std::cout << nickname_tmp << std::endl;
-			myClient.setNick(nickname_tmp);
-			break;
-		}
-	}
-}
-
-void Server::client_valid_userline(Client& myClient)
-{
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'USER <username>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "USER ", 5) == 0)
-		{
-			std::string	username_tmp(stock + 5);
-			std::cout << username_tmp << std::endl;
-			myClient.setUser(username_tmp);
-			break;
-		}
-	}
-}
-
-void Server::client_valid_realname(Client& myClient)
-{	
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'REAL <username>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		if (strncmp(stock, "REAL ", 5) == 0)
-		{
-			std::string	realname_tmp(stock + 5);
-			std::cout << realname_tmp << std::endl;
-			myClient.setRealName(realname_tmp);
-			break;
-		}
-	}
+	std::cout << "Host disconnected: " << _clientVector[i].getSocket() << std::endl;
+	close(_clientVector[i].getSocket());
+	_clientVector.erase(_clientVector.begin() + i);
 }
 
 void Server::check_signal(void)
@@ -256,80 +180,30 @@ void Server::check_signal(void)
 	return ;
 }
 
-void Server::close_server()
-{
-	close(_socket);
-	return ;
-}
-
-// void Server::disconnect_clients_from_serv()
-// {
-// 	int count = 0;
-
-// 	for (int i = 0; count != _nbClients; i++)
-// 	{
-// 		if (_clientList[i].getSocket())
-// 		{
-// 			std::cout << _clientList[i].getNick() << " disconnected" << std::endl;
-// 			close(_clientList[i].getSocket());
-// 			count++;
-// 			_nbClients--;
-// 			std::cout << "Client connected : " << _nbClients << std::endl;
-// 		}
-// 	}
-// 	return ;
-// }
-
-void Server::print_client_map()
-{
-	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
-	{
-		std::cout << "|---------------------" << std::endl;
-		std::cout << "| SOCKET : " << it->second.getSocket() << std::endl;
-		std::cout << "| USER : " << it->second.getUser() << std::endl;
-		std::cout << "| NICK : " << it->second.getNick() << std::endl;
-		std::cout << "| REALNAME : " << it->second.getRealName() << std::endl;
-		std::cout << "|---------------------" << std::endl;
-	}
-	return ;
-}
-
-// OTHER FUNCTIONS
-
-int	valid_port(char *argv)
-{
-	int count = 0;
-	for (int i = 0; argv[i]; i++)
-	{
-		if (!isdigit(argv[i]))
-			return (-1);
-		count++;
-	}
-	if (count != 5)
-		return (-1);
-	return (0);
-}
-
-int base_parsing(int argc, char **argv)
-{
-	if (argc != 3)
-	{
-		std::cout << BAD_ARGS;
-		return (-1);
-	}
-	else if (valid_port(argv[1]) == -1)
-	{
-		std::cout << INVALID_PORT;
-		return (-1);
-	}
-	else
-		return (0);
-}
-
 void	signal_action(int s)
 {
 	(void)s;
 	std::cout << "CONTROLE C VALIDE" << std::endl;
 	_loop = false;
+	return ;
+}
+
+// OTHER FUNCTIONS
+
+int		valid_port(char *argv)
+{
+	if (atoi(argv) != 6661 && atoi(argv) != 6662 && atoi(argv) != 6663 && atoi(argv) != 6664 \
+		&& atoi(argv) != 6665 && atoi(argv) != 6666 && atoi(argv) != 6667 && atoi(argv) != 6668 \
+		&& atoi(argv) != 6669)
+		return (-1);
+	return (0);
+}
+
+void	base_parsing(int argc, char **argv)
+{
+	if (argc != 3)
+		throw(BadArgs());
+	else if (valid_port(argv[1]) == -1)
+		throw(BadPort());
 	return ;
 }

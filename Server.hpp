@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 13:55:08 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 20:33:51 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include <csignal>
 #include <vector>
 #include <iterator>
+
+#include "Channel.hpp"
 #include "Client.hpp"
 #include "Exceptions.hpp"
 
@@ -67,26 +69,34 @@ class Server
 			void		printClient(void);
 			void		isAuthenticate(Client myClient);
 			int			findClientByFd(int fd);
-			// CMD
+			
+			// CMD AUTH
 
 			void		getPass(int fd, std::string cmd);
 			void		getNick(int fd, std::string cmd);
+
+			// CMD CHANNELS
+
+			void							handleChannels(int fd, std::string cmd);
+			bool							channelNameIsAcceptable(std::string cmd);
+			bool							channelNameIsFree(std::string cmd);
+			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
+			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
 			
-			void		client_valid_realname(Client& myClient);
-			void		client_valid_nickname(Client& myClient);
-			void		client_valid_pass(Client& myClient);
-			void		client_valid_username(Client& myClient);
+
 
 	private:
 			unsigned int	_port;
 			int				_socket;
 			std::string		_password;
 			std::vector<Client>	_clientVector;
+			std::vector<Channel> _channelVector;
 			int				_nbClients;
 };
 
 // UTILS
 
+bool	charAcceptableNameChannel(char c);
 int		valid_port(char *argv);
 void	base_parsing(int argc, char **argv);
 void	signal_action(int s);

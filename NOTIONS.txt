@@ -182,3 +182,8 @@ The protocol messages must be extracted from the contiguous stream of
     SPACE      =  %x20        ; space character
     crlf       =  %x0D %x0A   ; "carriage return" "linefeed"
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+JOIN #<channel>
+JOIN #<channel> <password>
+

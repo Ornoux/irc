@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 14:47:51 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 20:43:58 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,8 +198,10 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 	for (size_t i = 0; i < vectorCmd.size(); i++)
 	{
 		cmd = vectorCmd[i];
-		if ((cmd.compare(0, 4, "PASS")) == 0)
+		if ((cmd.compare(0, 5, "PASS ")) == 0)
 			getPass(fd, cmd);
+		else if ((cmd.compare(0, 5, "JOIN ")) == 0)
+			handleChannels(fd, cmd);
 		// else if ((cmd.compare(0, 5, "NICK ")) == 0)
 		// 	//GET NICK
 		// else if ((cmd.compare(0, 5, "USER ")) == 0)
@@ -209,6 +211,106 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 	}
 	printClient();
 }
+
+// JOIN #channel1,#channel2 fubar,foobar
+
+void	Server::handleChannels(int fd, std::string cmd)
+{
+	(void)fd;
+	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
+	std::vector<std::string> passwordsChannels = splitCmdNameChannels(cmd);
+	
+	for (size_t i = 0; i < namesChannels.size(); i++)
+	{
+		std::cout << "CHANNEL["<< i << "] " << " : " << namesChannels[i] << std::endl;
+	}
+	std::cout << std::endl;
+	for (size_t i = 0; i < passwordsChannels.size(); i++)
+	{
+		std::cout << "PASSWORD["<< i << "] " << " : " << passwordsChannels[i] << std::endl;
+	}
+	
+}
+
+std::vector<std::string>	Server::splitCmdPasswordChannels(std::string cmd)
+{
+	size_t ret = 0;
+
+	std::string stock;
+	std::vector<std::string> vectorPassword;
+	std::string delimiter = ",";
+	
+	stock = cmd.substr(5);
+	ret = stock.find(" ");
+	if (ret == std::string::npos)
+	{
+		return (vectorPassword);
+	}
+	else
+	{
+		stock = stock.substr(ret + 1);
+		std::cout << "Password stock : " << stock << std::endl;
+		while ((ret = stock.find(delimiter)) != std::string::npos)
+		{
+				std::string lineToAdd = stock.substr(0, ret);
+				stock = stock.substr(ret + delimiter.length());
+				vectorPassword.push_back(lineToAdd);
+		}
+	}
+	return (vectorPassword);
+}
+
+std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
+{
+	size_t ret = 0;
+
+	std::string stock;
+	std::vector<std::string> vectorChannels;
+	std::string delimiter = ",";
+	
+	
+	stock = cmd.substr(5);
+	ret = stock.find(" ");
+	if (ret == std::string::npos)
+	{
+		vectorChannels.push_back(stock);
+	}
+	stock = stock.substr(0, ret);
+	std::cout << "Name stock : " << stock << std::endl;
+	while ((ret = stock.find(delimiter)) != std::string::npos)
+	{
+			std::string lineToAdd = stock.substr(0, ret);
+			stock = stock.substr(ret + delimiter.length());
+			vectorChannels.push_back(lineToAdd);
+	}
+	return (vectorChannels);
+}
+
+bool	Server::channelNameIsFree(std::string cmd)
+{
+	for (size_t i = 0; i < _channelVector.size(); i++)
+	{
+		if (_channelVector[i].getName() == cmd)
+			return (false);		
+	}
+	return (true);
+}
+
+bool	Server::channelNameIsAcceptable(std::string cmd)
+{
+	if (cmd.size() < 2)
+		return (false);
+	if (cmd[0] != '#' && cmd[0] != '&' && cmd[0] != '!' && cmd[0] != '+')
+		return (false);
+	for (size_t i = 1; i < cmd.size(); i++)
+	{
+		if (charAcceptableNameChannel(cmd[i]) == false)
+			return (false);
+	}
+	return (true);
+}
+
+
 
 int	Server::findClientByFd(int fd)
 {
@@ -229,12 +331,6 @@ void	Server::isAuthenticate(Client myClient)
 		myClient.setBoolAuthenticate(true);
 	return ;
 }
-
-// void	Server::getNick(int fd, std::string cmd)
-// {
-// 	Client	myClient = findClientByFd(fd);
-// 	std::string tmp = cmd.substr(6);
-// }
 
 void	Server::getPass(int fd, std::string cmd)
 {
@@ -264,50 +360,6 @@ void	Server::getPass(int fd, std::string cmd)
 	return ;
 }
 
-bool check_cara(char c, char *str){
-	std::string st1(str);
-	int i = 0;
-
-	while(str[i] != '\r')
-	{
-		if (str[i] == c){
-			std::cout << "ok = "<<i << std::endl;
-			return true;
-		}
-		i++;
-	}
-	return false;
-}
-
-
-void Server::client_valid_nickname(Client& myClient)
-{	
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'NICK <nickname>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		stock[x - 1] = '\r';
-		stock[x] = '\n';
-		stock[x + 1] = '\0';
-		// std::cout << "stock 2 " << x - 6 << std::endl;
-		// std::cout << "cara " << check_cara(' ', stock + 5)  << std::endl;
-		if (strncmp(stock, "NICK ", 5) == 0  
-			&& (check_cara(' ', stock + 5) == 0) && (x - 6)> 0)
-		{
-			std::string	nickname_tmp(stock + 5);
-			std::cout << nickname_tmp << std::endl;
-			myClient.setNick(nickname_tmp);
-			break;
-		}
-	}
-}
-
 void	Server::DeleteClientFromServ(int i)
 {
 	std::cout << "Host disconnected: " << _clientVector[i].getSocket() << std::endl;
@@ -315,57 +367,6 @@ void	Server::DeleteClientFromServ(int i)
 	_clientVector.erase(_clientVector.begin() + i);
 }
 
-void Server::client_valid_username(Client& myClient)
-{
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'USER <username>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		stock[x - 1] = '\r';
-		stock[x] = '\n';
-		stock[x + 1] = '\0';
-		if (strncmp(stock, "USER ", 5) == 0 
-			&& (check_cara(' ', stock + 5) == 0) && (x - 6) > 0)
-		{
-			std::string	username_tmp(stock + 5);
-			std::cout << username_tmp << std::endl;
-			myClient.setUser(username_tmp);
-			break;
-		}
-	}
-}
-
-void Server::client_valid_realname(Client& myClient)
-{	
-	char stock[1024];
-	int x = 0;
-	
-	std::string message = "Enter : 'REAL <username>'\n";
-	const char	*message_tmp = message.c_str();
-	
-	while (1)
-	{
-		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-		stock[x - 1] = '\r';
-		stock[x] = '\n';
-		stock[x + 1] = '\0';
-		if (strncmp(stock, "REAL ", 5) == 0 
-			&& (check_cara(' ', stock + 5) == 0) && (x - 6 ) > 0)
-		{
-			std::string	realname_tmp(stock + 5);
-			std::cout << realname_tmp << std::endl;
-			myClient.setRealName(realname_tmp);
-			break;
-		}
-	}
-}
 
 void Server::check_signal(void)
 {
@@ -402,4 +403,12 @@ void	base_parsing(int argc, char **argv)
 	else if (valid_port(argv[1]) == -1)
 		throw(BadPort());
 	return ;
+}
+
+bool	charAcceptableNameChannel(char c)
+{
+	if (c == ',' || c == ':' || c == '#'
+		|| c == '&' || c == '+' || c == '!')
+		return (false);
+	return (true);
 }

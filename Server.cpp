@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 13:57:21 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 16:11:09 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,9 +197,9 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 	for (size_t i = 0; i < vectorCmd.size(); i++)
 	{
 		cmd = vectorCmd[i];
-		if ((cmd.compare(0, 4, "PASS")) == 0)
+		if ((cmd.compare(0, 5, "PASS ")) == 0)
 			getPass(fd, cmd);
-		// else if ((cmd.compare(0, 5, "NICK ")) == 0)
+		// else if ((cmd.compare(0, 5, "NICK")) == 0)
 		// 	//GET NICK
 		// else if ((cmd.compare(0, 5, "USER ")) == 0)
 		// 	// GET USER
@@ -243,7 +243,7 @@ void	Server::getPass(int fd, std::string cmd)
 	const char *replie = replie_tmp.c_str();
 	
 	std::cout << strlen(replie) << std::endl;
-	if (cmd.size() == 5)
+	if (cmd.size() == 5 || cmd.size() == 4 || onlyWhiteSpaces(cmd.substr(5)) == true)
 		send(fd, replie, strlen(replie), 0);
 	else if (_clientVector[client].getBoolPass() == true
 			|| _clientVector[client].getBoolAuthenticate() == true)
@@ -372,7 +372,6 @@ void Server::check_signal(void)
 	return ;
 }
 
-
 // OTHER FUNCTIONS
 
 void	signal_action(int s)
@@ -401,4 +400,14 @@ void	base_parsing(int argc, char **argv)
 	else if (valid_port(argv[1]) == -1)
 		throw(BadPort());
 	return ;
+}
+
+bool	onlyWhiteSpaces(std::string str)
+{
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] != ' ' && str[i] != '\t')
+			return (false);
+	}
+	return (true);
 }

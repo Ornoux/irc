@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/08 16:13:29 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/10 08:01:42 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,11 @@ class Client
 			void		setUser(std::string nick);
 
 	private:
-			int		_socket;
+			int			_socket;
 			std::string	_nickname;
 			std::string	_username;
 			std::string	_realname;
+			bool		authenticate;
 };
 
 std::ostream& operator<<(std::ostream& o, const Client& rhs);

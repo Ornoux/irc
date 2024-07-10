@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/09 18:32:42 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 07:50:37 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	Server::launch_serv(char **av)
 	listen(_socket, 10);
 }
 
-void    Server::loop_test(char **av, Client myClient)
+void    Server::loop(char **av, Client myClient)
 {
 	fd_set readfds;
 	int max_sd;
@@ -129,7 +129,7 @@ void    Server::loop_test(char **av, Client myClient)
 				if (ret == 0)
 					DeleteClientFromServ(i);
 				else
-					SendDataToClient(cs, std::string(buff));
+					getCmd(cs, std::string(buff));
 			}
 		}
 	}
@@ -163,9 +163,28 @@ void	Server::printClient()
 	return ;
 }
 
-void	Server::SendDataToClient(int fd, std::string msg)
+void	Server::getCmd(int fd, std::string msg)
 {
-	send(fd, msg.c_str(), msg.size(), 0);
+	std::vector<std::string> vectorInput;
+	std::string delimiter = "\r\n";
+	size_t ret;
+	
+	(void)fd;
+	ret = msg.find(delimiter);
+	if (ret == std::string::npos)
+	{
+		vectorInput.push_back(msg);
+	}
+	else
+	{
+		while ((ret = msg.find(delimiter)) != std::string::npos)
+		{
+			std::string lineToAdd = msg.substr(0, ret);
+			msg = msg.substr(ret + delimiter.length());
+			vectorInput.push_back(lineToAdd);
+		}
+	}
+	std::cout << "SIZE OF MY VECTOR : " << vectorInput.size() << std::endl;
 	return ;
 }
 

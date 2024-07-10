@@ -6,13 +6,13 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/07 13:48:29 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 08:01:59 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL")
+Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL"), authenticate(false)
 {
 	return ;
 }

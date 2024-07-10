@@ -97,3 +97,16 @@ Son utilisation : - la fonction bind() utilise les éléments de cette structure
 				  l'adresse du destinataire/expéditeur.
 
 				  - accept() utilise sockaddr_in pour récupérer l'adresse et le port du client connecté.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+"CAP LS 302"
+"NICK nicol"
+"USER nicol 0 * :realname"
+
+le serveur recoit en realite : 
+
+"CAP LS 302\r\nNICK nicol\r\nUSER nicol 0 * :realname\r\n"
+
+Parser la string avec \r\n

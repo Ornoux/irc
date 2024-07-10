@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/09 18:31:57 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 08:04:01 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,14 +50,15 @@ class Server
 			
 			// MEMBER FUNCTIONS
 			
-			void		loop_test(char **av, Client myClient);
+			void		loop(char **av, Client myClient);
 			void		launch_serv(char **av);
 			void		AddClientToVector(Client myClient);
 			void		DeleteClientFromServ(int i);
 			void		check_signal(void);
 			void		check_clients_here();
 			bool		isClientDisconnected(int fd);
-			void		SendDataToClient(int fd, std::string msg);
+			void		getCmd(int fd, std::string cmd);
+			void		treatVectorCmd(std::vector<std::string> vectorCmd);
 			void		printClient(void);
 			
 			void		client_valid_realname(Client& myClient);

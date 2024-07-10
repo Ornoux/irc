@@ -6,13 +6,13 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 08:01:59 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 13:02:55 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL"), authenticate(false)
+Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL")//, authenticate(false)
 {
 	return ;
 }
@@ -49,6 +49,47 @@ std::string Client::getNick(void) const
 {
 	return (this->_nickname);
 }
+
+void Client::setBoolNick(bool var)
+{
+	this->_nick = var;
+}
+
+bool Client::getBoolNick(void) const
+{
+	return (this->_nick);
+}
+
+void Client::setBoolUser(bool var)
+{
+	this->_user = var;
+}
+
+bool Client::getBoolUser(void) const
+{
+	return (this->_user);
+}
+
+void Client::setBoolPass(bool var)
+{
+	this->_pass = var;
+}
+
+bool Client::getBoolPass(void) const
+{
+	return (this->_pass);
+}
+
+bool Client::getBoolAuthenticate(void) const
+{
+	return (this->_authenticate);
+}
+
+void Client::setBoolAuthenticate(bool var)
+{
+	this->_authenticate = var;
+}
+
 
 // USERNAME
 

@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/09 18:15:53 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/09 18:16:03 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 10:38:26 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,3 +57,11 @@ class SelectError : public std::exception
             }
 };
 
+class FindClient : public std::exception
+{
+    public:
+            const char* what() const throw()
+            {
+                return ("Error during search of client");
+            }
+};

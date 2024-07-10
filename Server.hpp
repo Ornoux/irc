@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 08:04:01 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 13:55:08 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,11 @@
 #include <iterator>
 #include "Client.hpp"
 #include "Exceptions.hpp"
+
+#define ERR_NEEDMOREPARAMS "Not enough parameters\n"
+#define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\n"
+
+
 
 class Server
 {
@@ -58,8 +63,14 @@ class Server
 			void		check_clients_here();
 			bool		isClientDisconnected(int fd);
 			void		getCmd(int fd, std::string cmd);
-			void		treatVectorCmd(std::vector<std::string> vectorCmd);
+			void		treatVectorCmd(int fd, std::vector<std::string> vectorCmd);
 			void		printClient(void);
+			void		isAuthenticate(Client myClient);
+			int			findClientByFd(int fd);
+			// CMD
+
+			void		getPass(int fd, std::string cmd);
+			void		getNick(int fd, std::string cmd);
 			
 			void		client_valid_realname(Client& myClient);
 			void		client_valid_nickname(Client& myClient);

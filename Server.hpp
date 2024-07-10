@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 13:55:08 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 19:09:18 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,8 @@ class Server
 			int			findClientByFd(int fd);
 			// CMD
 
-			void		getPass(int fd, std::string cmd);
+			void		checkPass(int fd, std::string cmd);
+			void		checkNick(int fd, std::string cmd);
 			void		getNick(int fd, std::string cmd);
 			
 			void		client_valid_realname(Client& myClient);
@@ -90,8 +91,9 @@ class Server
 int		valid_port(char *argv);
 void	base_parsing(int argc, char **argv);
 void	signal_action(int s);
-int 	check_cara(char str);
 int		int_max(char *str);
+bool	checkSpace(char c, const char *str);
+bool	checkNormeCara(const char *str);
 
 
 

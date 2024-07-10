@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 13:57:21 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/10 14:47:51 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,7 @@ void	Server::getCmd(int fd, std::string msg)
 void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 {
 	std::string cmd;
+	std::string test;
 	(void)fd;
 	for (size_t i = 0; i < vectorCmd.size(); i++)
 	{

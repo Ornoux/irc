@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:13:03 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 17:15:17 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 21:14:34 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class Channel
 			bool		channelAlreadyExists(std::string name);
 			
 			void		addClientToChannel(Client myClient);
+			void		addClientOperatorToChannel(Client myClient);
 	private: 
 			std::string _name;
 			std::string _password;

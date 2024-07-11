@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 17:19:31 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 21:15:10 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,10 +202,6 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			getPass(fd, cmd);
 		else if ((cmd.compare(0, 5, "JOIN ")) == 0)
 			handleChannels(fd, cmd);
-		// else if ((cmd.compare(0, 5, "NICK ")) == 0)
-		// 	//GET NICK
-		// else if ((cmd.compare(0, 5, "USER ")) == 0)
-		// 	// GET USER
 		else
 			std::cout << "OKAY" << std::endl;
 	}
@@ -216,7 +212,6 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 
 void	Server::handleChannels(int fd, std::string cmd)
 {
-	(void)fd;
 	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
 	std::vector<std::string> passwordsChannels = splitCmdPasswordChannels(cmd);
 	Client myClient = findClientByFd(fd);
@@ -242,33 +237,46 @@ void	Server::handleChannels(int fd, std::string cmd)
 		}
 		if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
 		{
-			// Creation du channel
-			// Mot de passe ou non
-			// Rentrer le client dans le channel
 			Channel *myChannel = new Channel();
 			myChannel->setName(channelName);
 			if (i <= nbPasswords)
 				myChannel->setPassword(passwordsChannels[i]);
 			myChannel->addClientToChannel(myClient);
+			myChannel->addClientOperatorToChannel(myClient);
 			_channelVector.push_back(myChannel);
 		}
-		else // CHANNEL EXISTE
+		else // CANAL EXISTS
 		{
-			// VERIFICATION DU MOT DE PASSE
-			// AJOUT CLIENT
 			Channel *myChannel = findChannelByName(channelName);
-			if (myChannel->hasPassword() == true)
+			if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
 			{
-				if (i <= nbPasswords) // PASSWORD FOURNI ALORS ON CHECK
+				if (i <= nbPasswords) // PASSWORD GIVED
 				{
-					if (passwordsChannels[i] != myChannel->getPassword())	
+					if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
+					{
+						myClient.sendErrorRPL(channelName, ERR_BADCHANNELKEY);
+						return ;
+					}
+					else
+						myChannel->addClientToChannel(myClient);
 				}
-				
+				else // PASSWORD NOT GIVED WHILE IT REQUIRED
+				{
+					myClient.sendErrorRPL(channelName, ERR_BADCHANNELKEY);
+					return ;
+				}
 			}
-			
-
+			else // CANAL EXISTS BUT DOESN'T NEED A PASSWORD
+			{
+				if (i <= nbPasswords)
+				{
+					myClient.sendErrorRPL(channelName, ERR_KEYSET);
+					return ;
+				}	
+				else
+					myChannel->addClientToChannel(myClient);
+			}
 		}
-		
 		
 	}	
 }
@@ -321,20 +329,18 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 	std::string delimiter = ",";
 	size_t	space = 0;
 	
-	// channel1,channel2,channel3 
-	
 	stock = cmd.substr(5);
 	ret = stock.find(" ");
 	space = ret;
 	if (ret == std::string::npos)
 	{
 		ret = stock.find(delimiter);
-		if (ret == std::string::npos) // JOIN channel
+		if (ret == std::string::npos)
 		{
 			vectorChannels.push_back(stock);
 			return (vectorChannels);
 		}
-		else // JOIN channel1,channel2......
+		else
 		{
 			while ((ret = stock.find(delimiter)) != std::string::npos)
 			{
@@ -347,7 +353,7 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 		}
 		return (vectorChannels);
 	}
-	else // JOIN channel1,channel2 1,2
+	else
 	{
 		stock = stock.substr(0, ret);
 		std::cout << "Name stock : " << stock << std::endl;

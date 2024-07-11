@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 17:12:10 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 21:00:08 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@
 // JOIN
 #define ERR_BADCHANMASK "Bad Channel Mask\n"
 #define ERR_USERONCHANNEL "is already on channel\n"
-
+#define ERR_BADCHANNELKEY "Cannot join channel\n"
+#define ERR_KEYSET "Channel key already set\n"
 
 
 class Server

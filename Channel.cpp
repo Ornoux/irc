@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 16:44:03 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 21:14:44 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,4 +60,9 @@ void Channel::setPassword(std::string password)
 void	Channel::addClientToChannel(Client myClient)
 {
 	_clientsChannel.push_back(myClient);
+}
+
+void	Channel::addClientOperatorToChannel(Client myClient)
+{
+	_clientsOperators.push_back(myClient);
 }

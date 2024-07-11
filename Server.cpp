@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 20:43:58 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 17:19:31 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,18 +218,69 @@ void	Server::handleChannels(int fd, std::string cmd)
 {
 	(void)fd;
 	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
-	std::vector<std::string> passwordsChannels = splitCmdNameChannels(cmd);
+	std::vector<std::string> passwordsChannels = splitCmdPasswordChannels(cmd);
+	Client myClient = findClientByFd(fd);
+	std::string channelName;
+	int	nbPasswords = passwordsChannels.size();
 	
+	// VERIF NAMES CHANNELS
+	for (size_t i = 0; i , namesChannels.size(); i++)
+	{
+		if (channelNameIsAcceptable(namesChannels[i]) == false)
+		{
+			myClient.sendErrorRPL(namesChannels[i], ERR_BADCHANMASK);
+			return ;
+		}
+	}
 	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
-		std::cout << "CHANNEL["<< i << "] " << " : " << namesChannels[i] << std::endl;
-	}
-	std::cout << std::endl;
-	for (size_t i = 0; i < passwordsChannels.size(); i++)
+		channelName = namesChannels[i];
+		if (myClient.isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
+		{
+			myClient.sendErrorRPL(myClient.getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
+			return ;
+		}
+		if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
+		{
+			// Creation du channel
+			// Mot de passe ou non
+			// Rentrer le client dans le channel
+			Channel *myChannel = new Channel();
+			myChannel->setName(channelName);
+			if (i <= nbPasswords)
+				myChannel->setPassword(passwordsChannels[i]);
+			myChannel->addClientToChannel(myClient);
+			_channelVector.push_back(myChannel);
+		}
+		else // CHANNEL EXISTE
+		{
+			// VERIFICATION DU MOT DE PASSE
+			// AJOUT CLIENT
+			Channel *myChannel = findChannelByName(channelName);
+			if (myChannel->hasPassword() == true)
+			{
+				if (i <= nbPasswords) // PASSWORD FOURNI ALORS ON CHECK
+				{
+					if (passwordsChannels[i] != myChannel->getPassword())	
+				}
+				
+			}
+			
+
+		}
+		
+		
+	}	
+}
+
+bool	Server::channelAlreadyExists(std::string channel)
+{
+	for (size_t i = 0; i < _channelVector.size(); i++)
 	{
-		std::cout << "PASSWORD["<< i << "] " << " : " << passwordsChannels[i] << std::endl;
+		if (channel == _channelVector[i]->getName())
+			return (true);
 	}
-	
+	return (false);
 }
 
 std::vector<std::string>	Server::splitCmdPasswordChannels(std::string cmd)
@@ -252,10 +303,11 @@ std::vector<std::string>	Server::splitCmdPasswordChannels(std::string cmd)
 		std::cout << "Password stock : " << stock << std::endl;
 		while ((ret = stock.find(delimiter)) != std::string::npos)
 		{
-				std::string lineToAdd = stock.substr(0, ret);
-				stock = stock.substr(ret + delimiter.length());
-				vectorPassword.push_back(lineToAdd);
+			std::string lineToAdd = stock.substr(0, ret);
+			stock = stock.substr(ret + delimiter.length());
+			vectorPassword.push_back(lineToAdd);
 		}
+		vectorPassword.push_back(stock);
 	}
 	return (vectorPassword);
 }
@@ -267,59 +319,68 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 	std::string stock;
 	std::vector<std::string> vectorChannels;
 	std::string delimiter = ",";
+	size_t	space = 0;
 	
+	// channel1,channel2,channel3 
 	
 	stock = cmd.substr(5);
 	ret = stock.find(" ");
+	space = ret;
 	if (ret == std::string::npos)
 	{
-		vectorChannels.push_back(stock);
-	}
-	stock = stock.substr(0, ret);
-	std::cout << "Name stock : " << stock << std::endl;
-	while ((ret = stock.find(delimiter)) != std::string::npos)
-	{
-			std::string lineToAdd = stock.substr(0, ret);
-			stock = stock.substr(ret + delimiter.length());
+		ret = stock.find(delimiter);
+		if (ret == std::string::npos) // JOIN channel
+		{
+			vectorChannels.push_back(stock);
+			return (vectorChannels);
+		}
+		else // JOIN channel1,channel2......
+		{
+			while ((ret = stock.find(delimiter)) != std::string::npos)
+			{
+					std::string lineToAdd = stock.substr(0, ret);
+					stock = stock.substr(ret + delimiter.length());
+					vectorChannels.push_back(lineToAdd);
+			}
+			std::string lineToAdd = stock.substr(0, space);
 			vectorChannels.push_back(lineToAdd);
+		}
+		return (vectorChannels);
+	}
+	else // JOIN channel1,channel2 1,2
+	{
+		stock = stock.substr(0, ret);
+		std::cout << "Name stock : " << stock << std::endl;
+		while ((ret = stock.find(delimiter)) != std::string::npos)
+		{
+				std::string lineToAdd = stock.substr(0, ret);
+				stock = stock.substr(ret + delimiter.length());
+				vectorChannels.push_back(lineToAdd);
+		}
+		std::string lineToAdd = stock.substr(0, space);
+		vectorChannels.push_back(lineToAdd);
 	}
 	return (vectorChannels);
 }
 
-bool	Server::channelNameIsFree(std::string cmd)
+Channel *Server::findChannelByName(std::string name)
 {
-	for (size_t i = 0; i < _channelVector.size(); i++)
+	for (size_t i = 0; _channelVector.size(); i++)
 	{
-		if (_channelVector[i].getName() == cmd)
-			return (false);		
+		if (_channelVector[i]->getName() == name)
+			return (_channelVector[i]);
 	}
-	return (true);
+	return (NULL);
 }
 
-bool	Server::channelNameIsAcceptable(std::string cmd)
-{
-	if (cmd.size() < 2)
-		return (false);
-	if (cmd[0] != '#' && cmd[0] != '&' && cmd[0] != '!' && cmd[0] != '+')
-		return (false);
-	for (size_t i = 1; i < cmd.size(); i++)
-	{
-		if (charAcceptableNameChannel(cmd[i]) == false)
-			return (false);
-	}
-	return (true);
-}
-
-
-
-int	Server::findClientByFd(int fd)
+Client	Server::findClientByFd(int fd)
 {
 	int	client_socket = 0;
 	for (size_t i = 0; i < _clientVector.size(); i++)
 	{
 		client_socket = _clientVector[i].getSocket();
 		if (client_socket == fd)
-			return (i);
+			return (_clientVector[i]);
 	}
 	throw(FindClient());
 }
@@ -334,7 +395,7 @@ void	Server::isAuthenticate(Client myClient)
 
 void	Server::getPass(int fd, std::string cmd)
 {
-	int	client = findClientByFd(fd);
+	Client myClient = findClientByFd(fd);
 	
 	std::string replie_tmp = "PASS :" + std::string(ERR_NEEDMOREPARAMS);
 	const char *replie = replie_tmp.c_str();
@@ -342,8 +403,8 @@ void	Server::getPass(int fd, std::string cmd)
 	std::cout << strlen(replie) << std::endl;
 	if (cmd.size() == 5)
 		send(fd, replie, strlen(replie), 0);
-	else if (_clientVector[client].getBoolPass() == true
-			|| _clientVector[client].getBoolAuthenticate() == true)
+	else if (myClient.getBoolPass() == true
+			|| myClient.getBoolAuthenticate() == true)
 	{
 		replie_tmp = "PASS :" + std::string(ERR_ALREADYREGISTRED);
 		replie = replie_tmp.c_str();
@@ -354,8 +415,8 @@ void	Server::getPass(int fd, std::string cmd)
 		std::string good_pass = "PASS " + _password + "\n";
 
 		if (cmd.compare(good_pass) == 0)
-			_clientVector[client].setBoolPass(true);
-		isAuthenticate(_clientVector[client]);
+			myClient.setBoolPass(true);
+		isAuthenticate(myClient);
 	}
 	return ;
 }
@@ -405,10 +466,35 @@ void	base_parsing(int argc, char **argv)
 	return ;
 }
 
+// PASSWORD / CHANNEL PARSING CHARACTERS BASIC FUNCTIONS
+
 bool	charAcceptableNameChannel(char c)
 {
 	if (c == ',' || c == ':' || c == '#'
 		|| c == '&' || c == '+' || c == '!')
 		return (false);
+	return (true);
+}
+bool	Server::channelNameIsFree(std::string cmd)
+{
+	for (size_t i = 0; i < _channelVector.size(); i++)
+	{
+		if (_channelVector[i]->getName() == cmd)
+			return (false);		
+	}
+	return (true);
+}
+
+bool	Server::channelNameIsAcceptable(std::string cmd)
+{
+	if (cmd.size() < 2)
+		return (false);
+	if (cmd[0] != '#' && cmd[0] != '&' && cmd[0] != '!' && cmd[0] != '+')
+		return (false);
+	for (size_t i = 1; i < cmd.size(); i++)
+	{
+		if (charAcceptableNameChannel(cmd[i]) == false)
+			return (false);
+	}
 	return (true);
 }

@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 18:32:14 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 15:12:05 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,6 +115,22 @@ std::string Client::getRealName(void) const
 	return (this->_realname);
 }
 
+bool	Client::isInChannel(std::string channel)
+{
+	for (size_t i = 0; i < _channels.size(); i++)
+	{
+		if (channel == _channels[i].getName())
+			return (true);
+	}
+	return (false);
+}
+
+void	Client::sendErrorRPL(std::string base, char *error_msg)
+{
+	std::string msg = base + " :" + error_msg;
+	send(_socket, msg.c_str(), msg.size(), 0);
+	return ;
+}
 
 std::ostream& operator<<(std::ostream& o, const Client& rhs)
 {

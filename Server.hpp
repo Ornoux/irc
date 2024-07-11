@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 20:33:51 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 17:12:10 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,16 @@
 #include "Client.hpp"
 #include "Exceptions.hpp"
 
+
+// UTILS CMD
 #define ERR_NEEDMOREPARAMS "Not enough parameters\n"
+
+// PASS
 #define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\n"
+
+// JOIN
+#define ERR_BADCHANMASK "Bad Channel Mask\n"
+#define ERR_USERONCHANNEL "is already on channel\n"
 
 
 
@@ -68,7 +76,8 @@ class Server
 			void		treatVectorCmd(int fd, std::vector<std::string> vectorCmd);
 			void		printClient(void);
 			void		isAuthenticate(Client myClient);
-			int			findClientByFd(int fd);
+			Client		findClientByFd(int fd);
+			Channel*	findChannelByName(std::string name);
 			
 			// CMD AUTH
 
@@ -82,6 +91,7 @@ class Server
 			bool							channelNameIsFree(std::string cmd);
 			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
 			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
+			bool							channelAlreadyExists(std::string cmd);
 			
 
 
@@ -90,7 +100,7 @@ class Server
 			int				_socket;
 			std::string		_password;
 			std::vector<Client>	_clientVector;
-			std::vector<Channel> _channelVector;
+			std::vector<Channel*> _channelVector;
 			int				_nbClients;
 };
 

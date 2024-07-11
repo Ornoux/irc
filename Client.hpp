@@ -6,14 +6,28 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 20:31:06 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 16:38:14 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <iostream>
+#include <poll.h>
+#include <string>
+#include <cstring>
+#include <fcntl.h>
+#include <cstdlib>
+#include <unistd.h>
+#include <csignal>
+#include <vector>
+#include <iterator>
+#include "Channel.hpp"
 
 class Client
 {
@@ -45,6 +59,9 @@ class Client
 			bool		getBoolAuthenticate(void) const;
 			void		setBoolAuthenticate(bool var);
 			
+			bool		isInChannel(std::string channel);
+			void		sendErrorRPL(std::string base, char *error_msg);
+
 
 	private:
 			int			_socket;
@@ -52,6 +69,7 @@ class Client
 			std::string	_username;
 			std::string	_realname;
 			
+			std::vector<Channel> _channels;
 			bool		_authenticate;
 			bool		_pass;
 			bool		_user;

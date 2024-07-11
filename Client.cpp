@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 13:02:55 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/11 21:53:17 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
-Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL")//, authenticate(false)
+Client::Client() : _socket(0), _nickname("NULL"), _username("NULL"), _realname("NULL"), _authenticate(false), _pass(false), _user(false), _nick(false)
 {
 	return ;
 }

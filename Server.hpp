@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 19:09:18 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/11 15:59:43 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@
 
 #define ERR_NEEDMOREPARAMS "Not enough parameters\n"
 #define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\n"
-
+#define ERR_NONICKNAMEGIVEN "No nickname given\n"
+#define ERR_ERRONEUSNICKNAME "Erroneous nickname\n"
 
 
 class Server
@@ -71,6 +72,7 @@ class Server
 
 			void		checkPass(int fd, std::string cmd);
 			void		checkNick(int fd, std::string cmd);
+			void		checkUser(int fd, std::string cmd);
 			void		getNick(int fd, std::string cmd);
 			
 			void		client_valid_realname(Client& myClient);

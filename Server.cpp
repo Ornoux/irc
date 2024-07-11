@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 20:35:27 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/11 22:14:55 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,6 +168,11 @@ void	Server::printClient()
 			std::cout << "NICK: Valid." << std::endl;
 		else
 			std::cout << "NICK: Invalid." << std::endl;
+		
+		if (_clientVector[i].getBoolUser() == true)
+			std::cout << "USER: Valid." << std::endl;
+		else
+			std::cout << "USER: Invalid." << std::endl;
 	}
 	return ;
 }
@@ -209,8 +214,8 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			checkPass(fd, cmd);
 		else if ((cmd.compare(0, 4, "NICK")) == 0)
 			checkNick(fd, cmd);
-		// else if ((cmd.compare(0, 5, "USER ")) == 0)
-		// 	// GET USER
+		else if ((cmd.compare(0, 4, "USER")) == 0)
+			checkUser(fd,cmd);
 		else
 			std::cout << "OKAY" << std::endl;
 	}
@@ -232,16 +237,11 @@ int	Server::findClientByFd(int fd)
 void	Server::isAuthenticate(Client myClient)
 {
 	if (myClient.getBoolNick() == true && myClient.getBoolUser() == true
-		&& myClient.getBoolPass() == true)
+		&& myClient.getBoolPass() == true){
 		myClient.setBoolAuthenticate(true);
+		}
 	return ;
 }
-
-// void	Server::getNick(int fd, std::string cmd)
-// {
-// 	Client	myClient = findClientByFd(fd);
-// 	std::string tmp = cmd.substr(6);
-// }
 
 void	Server::checkPass(int fd, std::string cmd)
 {
@@ -251,8 +251,7 @@ void	Server::checkPass(int fd, std::string cmd)
 	const char *replie = replie_tmp.c_str();
 	const char *cmd_c = cmd.c_str();
 	
-	if (_clientVector[client].getBoolPass() == true
-			|| _clientVector[client].getBoolAuthenticate() == true )
+	if (_clientVector[client].getBoolPass() == true)
 	{
 		replie_tmp = "PASS :" + std::string(ERR_ALREADYREGISTRED);
 		replie = replie_tmp.c_str();
@@ -268,7 +267,6 @@ void	Server::checkPass(int fd, std::string cmd)
 
 		if (cmd.compare(good_pass) == 0)
 			_clientVector[client].setBoolPass(true);
-		isAuthenticate(_clientVector[client]);
 	}
 	return ;
 }
@@ -277,32 +275,97 @@ void	Server::checkNick(int fd, std::string cmd)
 {
 	int	client = findClientByFd(fd);
 	
-	std::string replie_tmp = "NICK :" + std::string(ERR_NEEDMOREPARAMS);
+	std::string replie_tmp = "NICK :" + std::string(ERR_ERRONEUSNICKNAME);
 	const char *replie = replie_tmp.c_str();
-	const char *cmd_c = cmd.c_str();
+	const char *cmd_c = cmd.c_str();  
 	
-	std::cout << "len" << strlen(cmd_c) - 6<< std::endl;   
-	if (_clientVector[client].getBoolNick() == true
-			|| _clientVector[client].getBoolAuthenticate() == true )
+	if (_clientVector[client].getBoolPass() == true &&
+	 _clientVector[client].getBoolUser() == false)
 	{
-		replie_tmp = "NICK :" + std::string(ERR_ALREADYREGISTRED);
+		if (_clientVector[client].getBoolNick() == true)
+		{
+			replie_tmp = "NICK :" + std::string(ERR_ALREADYREGISTRED);
+			replie = replie_tmp.c_str();
+			send(fd, replie, strlen(replie), 0);
+		}
+		else if (strncmp((cmd_c + 4), " " , 1) != 0)
+			return;
+		else if (strlen(cmd_c) - 6 == 0){	
+			replie_tmp = "NICK :" + std::string(ERR_NONICKNAMEGIVEN);
+			send(fd, replie, strlen(replie), 0);
+		}
+		else if (checkNormeCara(cmd_c + 5) == 1 || strlen(cmd_c + 5) > 10 
+			|| ( checkSpace(' ', cmd_c + 5) == 1 ))
+			send(fd, replie, strlen(replie), 0);
+			
+		else
+		{
+			_clientVector[client].setBoolNick(true);
+			std::string nickReal(cmd_c + 5);
+			_clientVector[client].setNick(nickReal);
+		}
+		return ;
+		
+	}
+	return; 
+}
+
+void	Server::checkUser(int fd, std::string cmd)
+{
+	int	client = findClientByFd(fd);
+	
+	std::string replie_tmp = "USER :" + std::string(ERR_NEEDMOREPARAMS);
+	const char *replie = replie_tmp.c_str();
+	const char *cmd_c = cmd.c_str(); 
+	std::string cmd_s(cmd_c);
+	
+	if (_clientVector[client].getBoolUser() == true)
+	{
+		replie_tmp = "USER :" + std::string(ERR_ALREADYREGISTRED);
 		replie = replie_tmp.c_str();
 		send(fd, replie, strlen(replie), 0);
-	}
-	else if (strlen(cmd_c) - 6 == 0)
-		send(fd, replie, strlen(replie), 0);
-	else if (checkNormeCara(cmd_c + 5) == 1 || strlen(cmd_c + 5) > 10 
-		|| ( checkSpace(' ', cmd_c + 5) == 1 ))
 		return;
-	else
-	{
-		_clientVector[client].setBoolNick(true);
-		std::string nickReal(cmd_c + 5);
-		_clientVector[client].setNick(nickReal);
-		isAuthenticate(_clientVector[client]);
-		// std::cout << "push "<< _clientVector[client].getNick() << std::endl;
 	}
-	return ;
+	
+	size_t start = 5;
+	size_t end = cmd_s.find(' ', start);
+	if (end == std::string::npos){
+		send(fd, replie, strlen(replie), 0);
+		return ;
+	}
+	std::string userReal = cmd_s.substr(start, end - start);
+	const char *ureal_c = userReal.c_str();
+	std::string ope = cmd_s.substr(end, 6);
+	std::cout << "ope" <<ope << std ::endl;
+	if (ope != " 0 * :")
+		return;
+	
+	
+	std::string realname((cmd_c + end + 6));
+	std::cout << "real" <<realname << std ::endl;
+	const char *real_c = realname.c_str(); 
+	
+	if (_clientVector[client].getBoolPass() == true &&
+	 _clientVector[client].getBoolNick() == true)
+	{
+		if (strncmp((cmd_c + 4), " " , 1) != 0)
+			return;
+		else if (strlen(cmd_c) - 6 == 0)
+			send(fd, replie, strlen(replie), 0);
+		else if (checkNormeCara(ureal_c) == 1 || checkNormeCara(real_c) == 1
+			|| ( checkSpace(' ', ureal_c) == 1 ) || (checkSpace(' ', real_c) == 1))
+			return;
+		else
+		{
+			_clientVector[client].setBoolUser(true);
+			std::cout << userReal << std::endl;
+			_clientVector[client].setUser(userReal);
+			_clientVector[client].setRealName(realname);
+			_clientVector[client].setBoolAuthenticate(true);
+		}
+		return ;
+	}
+	return; 
 }
 
 bool checkNormeCara(const char *str){
@@ -336,93 +399,12 @@ bool checkSpace(char c, const char *str){
 	return false;
 }
 
-
-// void Server::client_valid_nickname(Client& myClient)
-// {	
-// 	char stock[1024];
-// 	int x = 0;
-	
-// 	std::string message = "Enter : 'NICK <nickname>'\n";
-// 	const char	*message_tmp = message.c_str();
-	
-// 	while (1)
-// 	{
-// 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-// 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-// 		stock[x - 1] = '\r';
-// 		stock[x] = '\n';
-// 		stock[x + 1] = '\0';
-// 		// std::cout << "stock 2 " << x - 6 << std::endl;
-// 		// std::cout << "cara " << check_cara(' ', stock + 5)  << std::endl;
-// 		if (strncmp(stock, "NICK ", 5) == 0  
-// 			&& (check_cara(' ', stock + 5) == 0) && (x - 6)> 0)
-// 		{
-// 			std::string	nickname_tmp(stock + 5);
-// 			std::cout << nickname_tmp << std::endl;
-// 			myClient.setNick(nickname_tmp);
-// 			break;
-// 		}
-// 	}
-// }
-
 void	Server::DeleteClientFromServ(int i)
 {
 	std::cout << "Host disconnected: " << _clientVector[i].getSocket() << std::endl;
 	close(_clientVector[i].getSocket());
 	_clientVector.erase(_clientVector.begin() + i);
 }
-
-// void Server::client_valid_username(Client& myClient)
-// {
-// 	char stock[1024];
-// 	int x = 0;
-	
-// 	std::string message = "Enter : 'USER <username>'\n";
-// 	const char	*message_tmp = message.c_str();
-	
-// 	while (1)
-// 	{
-// 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-// 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-// 		stock[x - 1] = '\r';
-// 		stock[x] = '\n';
-// 		stock[x + 1] = '\0';
-// 		if (strncmp(stock, "USER ", 5) == 0 
-// 			&& (check_cara(' ', stock + 5) == 0) && (x - 6) > 0)
-// 		{
-// 			std::string	username_tmp(stock + 5);
-// 			std::cout << username_tmp << std::endl;
-// 			myClient.setUser(username_tmp);
-// 			break;
-// 		}
-// 	}
-// }
-
-// void Server::client_valid_realname(Client& myClient)
-// {	
-// 	char stock[1024];
-// 	int x = 0;
-	
-// 	std::string message = "Enter : 'REAL <username>'\n";
-// 	const char	*message_tmp = message.c_str();
-	
-// 	while (1)
-// 	{
-// 		send(myClient.getSocket(), message_tmp, sizeof(message), 0);
-// 		x = recv(myClient.getSocket(), stock, sizeof(stock), 0);
-// 		stock[x - 1] = '\r';
-// 		stock[x] = '\n';
-// 		stock[x + 1] = '\0';
-// 		if (strncmp(stock, "REAL ", 5) == 0 
-// 			&& (check_cara(' ', stock + 5) == 0) && (x - 6 ) > 0)
-// 		{
-// 			std::string	realname_tmp(stock + 5);
-// 			std::cout << realname_tmp << std::endl;
-// 			myClient.setRealName(realname_tmp);
-// 			break;
-// 		}
-// 	}
-// }
 
 void Server::check_signal(void)
 {

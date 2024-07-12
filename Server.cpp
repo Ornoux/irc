@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 13:44:16 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 14:53:29 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	Server::launch_serv(char **av)
 	listen(_socket, 10);
 }
 
-void    Server::loop(char **av, Client* myClient)
+void    Server::loop(char **av)
 {
 	fd_set readfds;
 	int max_sd;
@@ -96,6 +96,7 @@ void    Server::loop(char **av, Client* myClient)
 	int connexion;
 	char buff[1024];
 	int ret;
+	Client *myClient = new Client();
 	
 	launch_serv(av);
 	print_amazing();
@@ -117,7 +118,7 @@ void    Server::loop(char **av, Client* myClient)
 		if (connexion < 0)
 			throw(SelectError());
 		if (FD_ISSET(_socket, &readfds)) // RECOIT UNE CONNEXION
-			AddClientToVector(myClient);
+			myClient = AddClientToVector();
 		for (size_t i = 0; i < _clientVector.size(); i++)
 		{
 			cs = _clientVector[i]->getSocket();
@@ -135,8 +136,9 @@ void    Server::loop(char **av, Client* myClient)
 	return ;
 }
 
-void	Server::AddClientToVector(Client *myClient)
+Client*	Server::AddClientToVector()
 {
+	Client *myClient = new Client();
 	struct sockaddr_in	csin;
 	unsigned int	 	cslen = sizeof(csin);
 	int socket_client;
@@ -147,8 +149,8 @@ void	Server::AddClientToVector(Client *myClient)
 	myClient->setSocket(socket_client);
 	_clientVector.push_back(myClient);
 	_nbClients++;
-	_logger.logInfo("New client");
-	return ;
+	_logger.logInfo("New client connection");
+	return (myClient);
 }
 
 void	Server::printClient()
@@ -217,81 +219,93 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 
 void	Server::handleChannels(int fd, std::string cmd)
 {
+	(void)fd;
 	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
 	std::vector<std::string> passwordsChannels = splitCmdPasswordChannels(cmd);
-	Client *myClient = findClientByFd(fd);
-	std::string channelName;
-	size_t	nbPasswords = passwordsChannels.size() - 1;
+	// Client *myClient = findClientByFd(fd);
+	// std::string channelName;
+	// size_t	nbPasswords = passwordsChannels.size() - 1;
 	
 	// VERIF NAMES CHANNELS
+	// for (size_t i = 0; i < namesChannels.size(); i++)
+	// {
+	// 	if (channelNameIsAcceptable(namesChannels[i]) == false)
+	// 	{
+	// 		myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
+	// 		return ;
+	// 	}
+	// }
 	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
-		if (channelNameIsAcceptable(namesChannels[i]) == false)
-		{
-			myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
-			return ;
-		}
+		std::cout << "[" << i << "]" << " : " << namesChannels[i];
 	}
-	for (size_t i = 0; i < namesChannels.size(); i++)
+	for (size_t i = 0; i < passwordsChannels.size(); i++)
 	{
-		channelName = namesChannels[i];
-		if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
-		{
-			myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
-			return ;
-		}
-		if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
-		{
-			Channel *myChannel = new Channel();
-			myChannel->setName(channelName);
-			if (i <= nbPasswords)
-				myChannel->setPassword(passwordsChannels[i]);
-			myChannel->addClientToChannel(myClient);
-			myChannel->addClientOperatorToChannel(myClient);
-			_channelVector.push_back(myChannel);
-			std::cout << "Channel created.\n";
-			myChannel->printInfos();
-		}
-		else // CANAL EXISTS
-		{
-			Channel *myChannel = findChannelByName(channelName);
-			if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
-			{
-				if (i <= nbPasswords) // PASSWORD GIVED
-				{
-					if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
-					{
-						myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
-						return ;
-					}
-					else
-					{
-						std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
-						myChannel->addClientToChannel(myClient);
-					}
-				}
-				else // PASSWORD NOT GIVED WHILE IT REQUIRED
-				{
-					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
-					return ;
-				}
-			}
-			else // CANAL EXISTS BUT DOESN'T NEED A PASSWORD
-			{
-				if (i <= nbPasswords)
-				{
-					myClient->sendRPL(channelName, ERR_KEYSET);
-					return ;
-				}	
-				else
-				{
-					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
-					myChannel->addClientToChannel(myClient);
-				}
-			}
-		}
+		std::cout << "[" << i << "]" << " : " << passwordsChannels[i];
+	}
+	// for (size_t i = 0; i < namesChannels.size(); i++)
+	// {
+	// 	channelName = namesChannels[i];
+	// 	if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
+	// 	{
+	// 		myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
+	// 		return ;
+	// 	}
+	// 	if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
+	// 	{
+	// 		Channel *myChannel = new Channel();
+	// 		myChannel->setName(channelName);
+	// 		if (i <= nbPasswords)
+	// 		{
+	// 			std::cout << "OUI";
+	// 			myChannel->setPassword(passwordsChannels[i]);
+	// 		}
+	// 		myChannel->addClientToChannel(myClient);
+	// 		myChannel->addClientOperatorToChannel(myClient);
+	// 		_channelVector.push_back(myChannel);
+	// 		std::cout << "Channel created.\n";
+	// 		myChannel->printInfos();
+	// 	}
+	// 	else // CANAL EXISTS
+	// 	{
+	// 		Channel *myChannel = findChannelByName(channelName);
+	// 		if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
+	// 		{
+	// 			if (i <= nbPasswords) // PASSWORD GIVED
+	// 			{
+	// 				if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
+	// 				{
+	// 					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
+	// 					return ;
+	// 				}
+	// 				else
+	// 				{
+	// 					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+	// 					myChannel->addClientToChannel(myClient);
+	// 				}
+	// 			}
+	// 			else // PASSWORD NOT GIVED WHILE IT REQUIRED
+	// 			{
+	// 				myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
+	// 				return ;
+	// 			}
+	// 		}
+	// 		else // CANAL EXISTS BUT DOESN'T NEED A PASSWORD
+	// 		{
+	// 			if (i <= nbPasswords)
+	// 			{
+	// 				myClient->sendRPL(channelName, ERR_KEYSET);
+	// 				return ;
+	// 			}	
+	// 			else
+	// 			{
+	// 				std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+	// 				myChannel->addClientToChannel(myClient);
+	// 			}
+	// 		}
+	// 	}
 		
-	}	
+	// }	
 }
 
 bool	Server::channelAlreadyExists(std::string channel)
@@ -362,8 +376,10 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 			}
 			std::string lineToAdd = stock.substr(0, space);
 			vectorChannels.push_back(lineToAdd);
+			return (vectorChannels);
 		}
-		return (vectorChannels);
+		vectorChannels.push_back(stock);
+		return vectorChannels;
 	}
 	else
 	{

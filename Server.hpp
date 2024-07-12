@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 13:21:51 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 14:25:01 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,9 @@ class Server
 			
 			// MEMBER FUNCTIONS
 			
-			void		loop(char **av, Client* myClient);
+			void		loop(char **av);
 			void		launch_serv(char **av);
-			void		AddClientToVector(Client* myClient);
+			Client*		AddClientToVector();
 			void		DeleteClientFromServ(int i);
 			void		check_signal(void);
 			void		check_clients_here();

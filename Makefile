@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+         #
+#    By: npatron <npatron@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/03 16:53:15 by npatron           #+#    #+#              #
-#    Updated: 2024/07/06 19:36:52 by isouaidi         ###   ########.fr        #
+#    Updated: 2024/07/11 22:51:16 by npatron          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRCS =  main.cpp Client.cpp Server.cpp Utils.cpp\
+SRCS =  main.cpp Client.cpp Server.cpp Utils.cpp Channel.cpp \
 					
 OBJS = $(SRCS:.cpp=.o)
 

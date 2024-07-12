@@ -6,15 +6,29 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/10 12:05:38 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 13:29:44 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #pragma once
 
-#include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <iostream>
+#include <poll.h>
+#include <string>
+#include <cstring>
+#include <fcntl.h>
+#include <cstdlib>
+#include <unistd.h>
+#include <csignal>
+#include <vector>
+#include <iterator>
+#include "Logger.hpp"
+class Channel;
 
 class Client
 {
@@ -46,6 +60,9 @@ class Client
 			bool		getBoolAuthenticate(void) const;
 			void		setBoolAuthenticate(bool var);
 			
+			bool		isInChannel(std::string channel);
+			void		sendRPL(std::string base, const char *error_msg);
+			void		printInfos(void);
 
 	private:
 			int			_socket;
@@ -53,10 +70,13 @@ class Client
 			std::string	_username;
 			std::string	_realname;
 			
+			std::vector<Channel> _channels;
 			bool		_authenticate;
 			bool		_pass;
 			bool		_user;
 			bool		_nick;
+
+			Logger		_logger;
 };
 
 std::ostream& operator<<(std::ostream& o, const Client& rhs);

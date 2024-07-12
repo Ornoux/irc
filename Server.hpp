@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 14:25:01 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 19:12:18 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,18 +37,21 @@
 #include "Exceptions.hpp"
 
 // UTILS CMD
-#define ERR_NEEDMOREPARAMS "Not enough parameters\n"
+#define ERR_NEEDMOREPARAMS "Not enough parameters"
 
 // PASS
-#define ERR_ALREADYREGISTRED "Unauthorized command (already registered)\n"
+#define ERR_ALREADYREGISTRED "Unauthorized command (already registered)"
 
 // JOIN
-#define ERR_BADCHANMASK "Bad Channel Mask\n"
-#define ERR_USERONCHANNEL "is already on channel\n"
-#define ERR_BADCHANNELKEY "Cannot join channel\n"
-#define ERR_KEYSET "Channel key already set\n"
-#define ERR_NONICKNAMEGIVEN "No nickname given\n"
-#define ERR_ERRONEUSNICKNAME "Erroneous nickname\n"
+#define ERR_BADCHANMASK "Bad Channel Mask"
+#define ERR_USERONCHANNEL "is already on channel"
+#define ERR_BADCHANNELKEY "Cannot join channel"
+#define ERR_KEYSET "Channel key already set"
+
+//NICK
+#define ERR_NONICKNAMEGIVEN "No nickname given"
+#define ERR_ERRONEUSNICKNAME "Erroneous nickname"
+#define ERR_NICKNAMEINUSE "Nickname is already in use"
 
 
 class Server
@@ -91,6 +94,7 @@ class Server
 			void		checkNick(int fd, std::string cmd);
 			void		checkUser(int fd, std::string cmd);
 			void		getNick(int fd, std::string cmd);
+			bool		similarNick(const char *nick);
 
 			// CMD CHANNELS
 

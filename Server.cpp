@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 14:53:29 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 19:19:18 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ void    Server::loop(char **av)
 	
 	launch_serv(av);
 	print_amazing();
-	std::cout << "Server launched" << std::endl;
+	std::cout << GRAS << "Server launched\n" << std::endl;
 	while (true)
 	{
 		FD_ZERO(&readfds);
@@ -182,15 +182,19 @@ void	Server::getCmd(int fd, std::string msg)
 	size_t ret;
 	
 	ret = msg.find(delimiter);
-	_logger.logInput(msg);
 	if (ret == std::string::npos)
+	{
+		msg = msg.substr(0, msg.size() - 1);
+		_logger.logInput(msg);
 		vectorInput.push_back(msg);
+	}
 	else
 	{
+		_logger.logInput(msg);
 		while ((ret = msg.find(delimiter)) != std::string::npos)
 		{
 			std::string lineToAdd = msg.substr(0, ret);
-			msg = msg.substr(ret + delimiter.length());
+			msg = msg.substr(ret  + delimiter.length());
 			vectorInput.push_back(lineToAdd);
 		}
 	}
@@ -440,20 +444,30 @@ void	Server::checkPass(int fd, std::string cmd)
 		myClient->sendRPL("PASS", ERR_ALREADYREGISTRED);
 		return ;
 	}
-	else if (strlen(cmd_c) - 6 == 0 )
+	else if (strlen(cmd_c) - 5 == 0 )
 		myClient->sendRPL("PASS", ERR_NEEDMOREPARAMS);
 	else if (checkSpace(' ', cmd_c + 5) == 1)
 		return;
 	else
 	{
 		std::string good_pass = "PASS " + _password;
-		std::string other_good_pass = "PASS " + _password + "\n";
-		if (cmd.compare(good_pass) == 0 || cmd.compare(other_good_pass) == 0)
+		if (cmd.compare(good_pass) == 0 ){
 			myClient->setBoolPass(true);
+			_logger.logAccept("PASS");
+		}
 	}
 	return ;
 }
-
+bool	Server::similarNick(const char *nick){
+	
+	std::string nick_s(nick);
+	for (size_t i = 0; i < this->_clientVector.size(); i++)
+	{	
+		if((this->_clientVector[i]->getNick()) == nick_s)
+			return true;
+	}
+	return false;
+}
 void	Server::checkNick(int fd, std::string cmd)
 {
 	Client *myClient = findClientByFd(fd);
@@ -467,7 +481,7 @@ void	Server::checkNick(int fd, std::string cmd)
 			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
 		else if (strncmp((cmd_c + 4), " " , 1) != 0)
 			return;
-		else if (strlen(cmd_c) - 6 == 0)
+		else if (strlen(cmd_c) - 5 == 0)
 			myClient->sendRPL("NICK", ERR_NONICKNAMEGIVEN);
 		else if (checkNormeCara(cmd_c + 5) == 1 || strlen(cmd_c + 5) > 10 
 			|| ( checkSpace(' ', cmd_c + 5) == 1 ))
@@ -475,9 +489,15 @@ void	Server::checkNick(int fd, std::string cmd)
 			
 		else
 		{
+			if (similarNick((cmd_c + 5)) == true){
+				myClient->sendRPL("NICK", ERR_NICKNAMEINUSE);
+				return;
+			}
+			_logger.logAccept("NICK");
+			std::string nickReal((cmd_c + 5));
 			myClient->setBoolNick(true);
-			std::string nickReal(cmd_c + 5);
 			myClient->setNick(nickReal);
+				
 		}		
 	}
 	return; 
@@ -519,13 +539,14 @@ void	Server::checkUser(int fd, std::string cmd)
 	{
 		if (strncmp((cmd_c + 4), " " , 1) != 0)
 			return;
-		else if (strlen(cmd_c) - 6 == 0)
+		else if (strlen(cmd_c) - 5 == 0)
 			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
 		else if (checkNormeCara(ureal_c) == 1 || checkNormeCara(real_c) == 1
 			|| ( checkSpace(' ', ureal_c) == 1 ) || (checkSpace(' ', real_c) == 1))
 			return;
 		else
 		{
+			_logger.logAccept("USER");
 			myClient->setBoolUser(true);
 			myClient->setUser(userReal);
 			myClient->setRealName(realname);

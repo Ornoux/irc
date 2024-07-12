@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/03 17:56:51 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 22:48:23 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 14:23:12 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,10 @@
 int	main(int argc, char **av)
 {
 	Server	myServer;
-	Client	*myClient = new Client();
 	try
 	{
 		base_parsing(argc, av);
-		myServer.loop(av, myClient);
+		myServer.loop(av);
 	}
 	catch(std::exception& e)
 	{

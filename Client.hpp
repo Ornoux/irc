@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 16:38:14 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 13:29:44 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@
 #include <csignal>
 #include <vector>
 #include <iterator>
-#include "Channel.hpp"
+#include "Logger.hpp"
+class Channel;
 
 class Client
 {
@@ -60,8 +61,8 @@ class Client
 			void		setBoolAuthenticate(bool var);
 			
 			bool		isInChannel(std::string channel);
-			void		sendErrorRPL(std::string base, char *error_msg);
-
+			void		sendRPL(std::string base, const char *error_msg);
+			void		printInfos(void);
 
 	private:
 			int			_socket;
@@ -74,6 +75,8 @@ class Client
 			bool		_pass;
 			bool		_user;
 			bool		_nick;
+
+			Logger		_logger;
 };
 
 std::ostream& operator<<(std::ostream& o, const Client& rhs);

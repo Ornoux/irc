@@ -19,6 +19,7 @@
 		"concepts": "cpp",
 		"cstdint": "cpp",
 		"deque": "cpp",
+		"map": "cpp",
 		"unordered_map": "cpp",
 		"vector": "cpp",
 		"exception": "cpp",
@@ -48,26 +49,7 @@
 		"span": "cpp",
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
-		"typeinfo": "cpp",
-		"ctime": "cpp",
-		"bitset": "cpp",
-		"chrono": "cpp",
-		"codecvt": "cpp",
-		"complex": "cpp",
-		"condition_variable": "cpp",
-		"list": "cpp",
-		"map": "cpp",
-		"set": "cpp",
-		"ratio": "cpp",
-		"iomanip": "cpp",
-		"mutex": "cpp",
-		"sstream": "cpp",
-		"stop_token": "cpp",
-		"thread": "cpp",
-		"cfenv": "cpp",
-		"cinttypes": "cpp",
-		"typeindex": "cpp",
-		"variant": "cpp",
-		"semaphore": "cpp"
-	}
+		"typeinfo": "cpp"
+	},
+	"C_Cpp.errorSquiggles": "disabled"
 }

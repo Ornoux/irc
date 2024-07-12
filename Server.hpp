@@ -6,9 +6,10 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 21:00:08 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 13:21:51 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #pragma once
 
@@ -27,11 +28,13 @@
 #include <csignal>
 #include <vector>
 #include <iterator>
+#include <ctime>
+#include <fstream>
 
+#include "Logger.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "Exceptions.hpp"
-
 
 // UTILS CMD
 #define ERR_NEEDMOREPARAMS "Not enough parameters\n"
@@ -44,6 +47,8 @@
 #define ERR_USERONCHANNEL "is already on channel\n"
 #define ERR_BADCHANNELKEY "Cannot join channel\n"
 #define ERR_KEYSET "Channel key already set\n"
+#define ERR_NONICKNAMEGIVEN "No nickname given\n"
+#define ERR_ERRONEUSNICKNAME "Erroneous nickname\n"
 
 
 class Server
@@ -66,9 +71,9 @@ class Server
 			
 			// MEMBER FUNCTIONS
 			
-			void		loop(char **av, Client myClient);
+			void		loop(char **av, Client* myClient);
 			void		launch_serv(char **av);
-			void		AddClientToVector(Client myClient);
+			void		AddClientToVector(Client* myClient);
 			void		DeleteClientFromServ(int i);
 			void		check_signal(void);
 			void		check_clients_here();
@@ -76,13 +81,15 @@ class Server
 			void		getCmd(int fd, std::string cmd);
 			void		treatVectorCmd(int fd, std::vector<std::string> vectorCmd);
 			void		printClient(void);
-			void		isAuthenticate(Client myClient);
-			Client		findClientByFd(int fd);
+			void		isAuthenticate(Client *myClient);
+			Client*		findClientByFd(int fd);
 			Channel*	findChannelByName(std::string name);
 			
 			// CMD AUTH
 
-			void		getPass(int fd, std::string cmd);
+			void		checkPass(int fd, std::string cmd);
+			void		checkNick(int fd, std::string cmd);
+			void		checkUser(int fd, std::string cmd);
 			void		getNick(int fd, std::string cmd);
 
 			// CMD CHANNELS
@@ -100,9 +107,10 @@ class Server
 			unsigned int	_port;
 			int				_socket;
 			std::string		_password;
-			std::vector<Client>	_clientVector;
+			std::vector<Client*>	_clientVector;
 			std::vector<Channel*> _channelVector;
 			int				_nbClients;
+			Logger			_logger;
 };
 
 // UTILS
@@ -111,8 +119,9 @@ bool	charAcceptableNameChannel(char c);
 int		valid_port(char *argv);
 void	base_parsing(int argc, char **argv);
 void	signal_action(int s);
-int 	check_cara(char str);
 int		int_max(char *str);
+bool	checkSpace(char c, const char *str);
+bool	checkNormeCara(const char *str);
 
 
 

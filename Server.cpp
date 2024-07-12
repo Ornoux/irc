@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 21:15:10 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 13:44:16 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ void	Server::launch_serv(char **av)
 	listen(_socket, 10);
 }
 
-void    Server::loop(char **av, Client myClient)
+void    Server::loop(char **av, Client* myClient)
 {
 	fd_set readfds;
 	int max_sd;
@@ -107,7 +107,7 @@ void    Server::loop(char **av, Client myClient)
 		max_sd = _socket;
 		for (size_t i = 0; i < _clientVector.size(); i++)
 		{
-			cs = _clientVector[i].getSocket();
+			cs = _clientVector[i]->getSocket();
 			if (cs > 0)
 				FD_SET(cs, &readfds);
 			if (cs > max_sd)
@@ -120,12 +120,11 @@ void    Server::loop(char **av, Client myClient)
 			AddClientToVector(myClient);
 		for (size_t i = 0; i < _clientVector.size(); i++)
 		{
-			cs = _clientVector[i].getSocket();
+			cs = _clientVector[i]->getSocket();
 			if (FD_ISSET(cs, &readfds))
 			{
 				ret = recv(cs, buff, 1024, 0);
 				buff[ret] = '\0';
-				std::cout << buff << std::endl;
 				if (ret == 0)
 					DeleteClientFromServ(i);
 				else
@@ -136,20 +135,19 @@ void    Server::loop(char **av, Client myClient)
 	return ;
 }
 
-void	Server::AddClientToVector(Client myClient)
+void	Server::AddClientToVector(Client *myClient)
 {
 	struct sockaddr_in	csin;
 	unsigned int	 	cslen = sizeof(csin);
 	int socket_client;
 	
 	socket_client = accept(_socket, (struct sockaddr*)&csin, &cslen);
-	std::cout << socket_client;
 	if (socket_client < 0)
 		throw(AcceptError());
-	myClient.setSocket(socket_client);
+	myClient->setSocket(socket_client);
 	_clientVector.push_back(myClient);
 	_nbClients++;
-	std::cout << "Client accepted" << std::endl;
+	_logger.logInfo("New client");
 	return ;
 }
 
@@ -157,11 +155,20 @@ void	Server::printClient()
 {
 	for (size_t i = 0; i < _clientVector.size(); i++)
 	{
-		std::cout << "FD : " << _clientVector[i].getSocket() << std::endl;
-		if (_clientVector[i].getBoolPass() == true)
+		std::cout << "FD : " << _clientVector[i]->getSocket() << std::endl;
+		if (_clientVector[i]->getBoolPass() == true)
 			std::cout << "PASS: Valid." << std::endl;
 		else
 			std::cout << "PASS: Invalid." << std::endl;
+		if (_clientVector[i]->getBoolNick() == true)
+			std::cout << "NICK: Valid." << std::endl;
+		else
+			std::cout << "NICK: Invalid." << std::endl;
+		
+		if (_clientVector[i]->getBoolUser() == true)
+			std::cout << "USER: Valid." << std::endl;
+		else
+			std::cout << "USER: Invalid." << std::endl;
 	}
 	return ;
 }
@@ -173,10 +180,9 @@ void	Server::getCmd(int fd, std::string msg)
 	size_t ret;
 	
 	ret = msg.find(delimiter);
+	_logger.logInput(msg);
 	if (ret == std::string::npos)
-	{
 		vectorInput.push_back(msg);
-	}
 	else
 	{
 		while ((ret = msg.find(delimiter)) != std::string::npos)
@@ -193,19 +199,18 @@ void	Server::getCmd(int fd, std::string msg)
 void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 {
 	std::string cmd;
-	std::string test;
-	(void)fd;
 	for (size_t i = 0; i < vectorCmd.size(); i++)
 	{
 		cmd = vectorCmd[i];
-		if ((cmd.compare(0, 5, "PASS ")) == 0)
-			getPass(fd, cmd);
-		else if ((cmd.compare(0, 5, "JOIN ")) == 0)
+		if ((cmd.compare(0, 4, "PASS")) == 0)
+			checkPass(fd, cmd);
+		else if ((cmd.compare(0, 4, "NICK")) == 0)
+			checkNick(fd, cmd);
+		else if ((cmd.compare(0, 4, "USER")) == 0)
+			checkUser(fd,cmd);
+		else if ((cmd.compare(0, 4, "JOIN")) == 0)
 			handleChannels(fd, cmd);
-		else
-			std::cout << "OKAY" << std::endl;
 	}
-	printClient();
 }
 
 // JOIN #channel1,#channel2 fubar,foobar
@@ -214,25 +219,25 @@ void	Server::handleChannels(int fd, std::string cmd)
 {
 	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
 	std::vector<std::string> passwordsChannels = splitCmdPasswordChannels(cmd);
-	Client myClient = findClientByFd(fd);
+	Client *myClient = findClientByFd(fd);
 	std::string channelName;
-	int	nbPasswords = passwordsChannels.size();
+	size_t	nbPasswords = passwordsChannels.size() - 1;
 	
 	// VERIF NAMES CHANNELS
-	for (size_t i = 0; i , namesChannels.size(); i++)
+	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
 		if (channelNameIsAcceptable(namesChannels[i]) == false)
 		{
-			myClient.sendErrorRPL(namesChannels[i], ERR_BADCHANMASK);
+			myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
 			return ;
 		}
 	}
 	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
 		channelName = namesChannels[i];
-		if (myClient.isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
+		if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
 		{
-			myClient.sendErrorRPL(myClient.getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
+			myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
 			return ;
 		}
 		if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
@@ -244,6 +249,8 @@ void	Server::handleChannels(int fd, std::string cmd)
 			myChannel->addClientToChannel(myClient);
 			myChannel->addClientOperatorToChannel(myClient);
 			_channelVector.push_back(myChannel);
+			std::cout << "Channel created.\n";
+			myChannel->printInfos();
 		}
 		else // CANAL EXISTS
 		{
@@ -254,15 +261,18 @@ void	Server::handleChannels(int fd, std::string cmd)
 				{
 					if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
 					{
-						myClient.sendErrorRPL(channelName, ERR_BADCHANNELKEY);
+						myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
 						return ;
 					}
 					else
+					{
+						std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 						myChannel->addClientToChannel(myClient);
+					}
 				}
 				else // PASSWORD NOT GIVED WHILE IT REQUIRED
 				{
-					myClient.sendErrorRPL(channelName, ERR_BADCHANNELKEY);
+					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
 					return ;
 				}
 			}
@@ -270,11 +280,14 @@ void	Server::handleChannels(int fd, std::string cmd)
 			{
 				if (i <= nbPasswords)
 				{
-					myClient.sendErrorRPL(channelName, ERR_KEYSET);
+					myClient->sendRPL(channelName, ERR_KEYSET);
 					return ;
 				}	
 				else
+				{
+					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 					myChannel->addClientToChannel(myClient);
+				}
 			}
 		}
 		
@@ -308,7 +321,6 @@ std::vector<std::string>	Server::splitCmdPasswordChannels(std::string cmd)
 	else
 	{
 		stock = stock.substr(ret + 1);
-		std::cout << "Password stock : " << stock << std::endl;
 		while ((ret = stock.find(delimiter)) != std::string::npos)
 		{
 			std::string lineToAdd = stock.substr(0, ret);
@@ -356,7 +368,6 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 	else
 	{
 		stock = stock.substr(0, ret);
-		std::cout << "Name stock : " << stock << std::endl;
 		while ((ret = stock.find(delimiter)) != std::string::npos)
 		{
 				std::string lineToAdd = stock.substr(0, ret);
@@ -369,7 +380,7 @@ std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
 	return (vectorChannels);
 }
 
-Channel *Server::findChannelByName(std::string name)
+Channel*	Server::findChannelByName(std::string name)
 {
 	for (size_t i = 0; _channelVector.size(); i++)
 	{
@@ -379,61 +390,173 @@ Channel *Server::findChannelByName(std::string name)
 	return (NULL);
 }
 
-Client	Server::findClientByFd(int fd)
+Client*		Server::findClientByFd(int fd)
 {
 	int	client_socket = 0;
 	for (size_t i = 0; i < _clientVector.size(); i++)
 	{
-		client_socket = _clientVector[i].getSocket();
+		client_socket = _clientVector[i]->getSocket();
 		if (client_socket == fd)
 			return (_clientVector[i]);
 	}
-	throw(FindClient());
+	return (NULL);
 }
 
-void	Server::isAuthenticate(Client myClient)
+void	Server::isAuthenticate(Client *myClient)
 {
-	if (myClient.getBoolNick() == true && myClient.getBoolUser() == true
-		&& myClient.getBoolPass() == true)
-		myClient.setBoolAuthenticate(true);
+	if (myClient->getBoolNick() == true && myClient->getBoolUser() == true
+		&& myClient->getBoolPass() == true)
+	{
+		myClient->setBoolAuthenticate(true);
+		myClient->sendRPL("Welcome to the Internet Relay Network ", std::string(myClient->getNick() + "!" + myClient->getUser() + "@127.0.0.1:" + "\r\n").c_str());
+	}
 	return ;
 }
 
-void	Server::getPass(int fd, std::string cmd)
+void	Server::checkPass(int fd, std::string cmd)
 {
-	Client myClient = findClientByFd(fd);
+	Client* myClient = findClientByFd(fd);
 	
-	std::string replie_tmp = "PASS :" + std::string(ERR_NEEDMOREPARAMS);
-	const char *replie = replie_tmp.c_str();
+	const char *cmd_c = cmd.c_str();
 	
-	std::cout << strlen(replie) << std::endl;
-	if (cmd.size() == 5)
-		send(fd, replie, strlen(replie), 0);
-	else if (myClient.getBoolPass() == true
-			|| myClient.getBoolAuthenticate() == true)
+	if (myClient->getBoolPass() == true)
 	{
-		replie_tmp = "PASS :" + std::string(ERR_ALREADYREGISTRED);
-		replie = replie_tmp.c_str();
-		send(fd, replie, strlen(replie), 0);
+		myClient->sendRPL("PASS", ERR_ALREADYREGISTRED);
+		return ;
 	}
+	else if (strlen(cmd_c) - 6 == 0 )
+		myClient->sendRPL("PASS", ERR_NEEDMOREPARAMS);
+	else if (checkSpace(' ', cmd_c + 5) == 1)
+		return;
 	else
 	{
-		std::string good_pass = "PASS " + _password + "\n";
-
-		if (cmd.compare(good_pass) == 0)
-			myClient.setBoolPass(true);
-		isAuthenticate(myClient);
+		std::string good_pass = "PASS " + _password;
+		std::string other_good_pass = "PASS " + _password + "\n";
+		if (cmd.compare(good_pass) == 0 || cmd.compare(other_good_pass) == 0)
+			myClient->setBoolPass(true);
 	}
 	return ;
+}
+
+void	Server::checkNick(int fd, std::string cmd)
+{
+	Client *myClient = findClientByFd(fd);
+	
+	const char *cmd_c = cmd.c_str();  
+	
+	if (myClient->getBoolPass() == true &&
+		myClient->getBoolUser() == false)
+	{
+		if (myClient->getBoolNick() == true)
+			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
+		else if (strncmp((cmd_c + 4), " " , 1) != 0)
+			return;
+		else if (strlen(cmd_c) - 6 == 0)
+			myClient->sendRPL("NICK", ERR_NONICKNAMEGIVEN);
+		else if (checkNormeCara(cmd_c + 5) == 1 || strlen(cmd_c + 5) > 10 
+			|| ( checkSpace(' ', cmd_c + 5) == 1 ))
+			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
+			
+		else
+		{
+			myClient->setBoolNick(true);
+			std::string nickReal(cmd_c + 5);
+			myClient->setNick(nickReal);
+		}		
+	}
+	return; 
+}
+
+void	Server::checkUser(int fd, std::string cmd)
+{
+	Client *myClient = findClientByFd(fd);
+	
+	const char *cmd_c = cmd.c_str(); 
+	std::string cmd_s(cmd_c);
+	
+	if (myClient->getBoolUser() == true)
+	{
+		myClient->sendRPL("USER", ERR_ALREADYREGISTRED);
+		return;
+	}
+	
+	size_t start = 5;
+	size_t end = cmd_s.find(' ', start);
+	if (end == std::string::npos)
+	{
+		myClient->sendRPL("NICK", ERR_NEEDMOREPARAMS);
+		return ;
+	}
+	
+	std::string userReal = cmd_s.substr(start, end - start);
+	const char *ureal_c = userReal.c_str();
+	std::string ope = cmd_s.substr(end, 6);
+	
+	if (ope != " 0 * :")
+		return;
+	
+	std::string realname((cmd_c + end + 6));
+	const char *real_c = realname.c_str(); 
+	
+	if (myClient->getBoolPass() == true
+		&& myClient->getBoolNick() == true)
+	{
+		if (strncmp((cmd_c + 4), " " , 1) != 0)
+			return;
+		else if (strlen(cmd_c) - 6 == 0)
+			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
+		else if (checkNormeCara(ureal_c) == 1 || checkNormeCara(real_c) == 1
+			|| ( checkSpace(' ', ureal_c) == 1 ) || (checkSpace(' ', real_c) == 1))
+			return;
+		else
+		{
+			myClient->setBoolUser(true);
+			myClient->setUser(userReal);
+			myClient->setRealName(realname);
+			isAuthenticate(myClient);
+			myClient->printInfos();
+		}
+	}
+	return; 
+}
+
+bool checkNormeCara(const char *str){
+    
+	size_t i = 0;
+	
+    if (!((str[0] >= 'A' && str[0] <= 'Z') || (str[0] >= 'a' && str[0] <= 'z'))) 
+        return true;
+		 
+    while (i < strlen(str) - 1) {
+        if (!((str[i] >= '0' && str[i] <= '9') || (str[i] >= 'a' && str[i] <= 'z') || 
+			  (str[i] >= 'A' && str[i] <= 'Z') || str[i] == '-' || str[i] == '[' || str[i] == ']' || 
+              str[i] == '\\' || str[i] == '^' || str[i] == '{' || str[i] == '}' || 
+              str[i] == '_')) {
+            return true;
+        }
+        i++;
+    }
+
+    return false;
+}
+bool checkSpace(char c, const char *str){
+	int i = 0;
+
+	while(str[i])
+	{
+		if (str[i] == c)
+			return true;
+		i++;
+	}
+	return false;
 }
 
 void	Server::DeleteClientFromServ(int i)
 {
-	std::cout << "Host disconnected: " << _clientVector[i].getSocket() << std::endl;
-	close(_clientVector[i].getSocket());
+	_logger.logInfo("Client disconnected");
+	close(_clientVector[i]->getSocket());
 	_clientVector.erase(_clientVector.begin() + i);
 }
-
 
 void Server::check_signal(void)
 {
@@ -447,7 +570,6 @@ void Server::check_signal(void)
 void	signal_action(int s)
 {
 	(void)s;
-	std::cout << "CONTROLE C VALIDE" << std::endl;
 	_loop = false;
 	return ;
 }

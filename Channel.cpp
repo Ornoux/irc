@@ -6,13 +6,14 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/11 21:14:44 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 10:36:05 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
+#include "Client.hpp"
 
-Channel::Channel()
+Channel::Channel() : _name("NULL"), _password("NULL"), _topic("NULL"), _thereIsPassword(false), _thereIsTopic(false)
 {
 	return ;
 }
@@ -57,12 +58,28 @@ void Channel::setPassword(std::string password)
 	_thereIsPassword = true;
 }
 
-void	Channel::addClientToChannel(Client myClient)
+void	Channel::addClientToChannel(Client *myClient)
 {
 	_clientsChannel.push_back(myClient);
 }
 
-void	Channel::addClientOperatorToChannel(Client myClient)
+void	Channel::addClientOperatorToChannel(Client *myClient)
 {
 	_clientsOperators.push_back(myClient);
+}
+
+void	Channel::printInfos(void)
+{
+	std::cout << "---------------------------------" << std::endl;
+	std::cout << "| Channel name : " << _name << std::endl;
+	std::cout << "| Number of client : " << _clientsChannel.size();
+	if (hasPassword() == true)
+		std::cout << "| Password : " << _password << std::endl;
+	else
+		std::cout << "| No password required." << std::endl;
+	if (hasTopic() == true)
+		std::cout << "| Topic : " << _topic << std::endl;
+	else
+		std::cout << "| No topic here." << std::endl;
+	return ;
 }

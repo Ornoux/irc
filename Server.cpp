@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 14:53:29 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 17:22:45 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 bool _loop = true;
 
-Server::Server() : _port(0), _password("NULL"), _nbClients(0)
+Server::Server() : _port(0), _nbClients(0), _password("NULL")
 {
 	return ;
 }
@@ -180,7 +180,7 @@ void	Server::getCmd(int fd, std::string msg)
 	std::vector<std::string> vectorInput;
 	std::string delimiter = "\r\n";
 	size_t ret;
-	
+	std::cout << "FONCTION GETCMD ; " << msg << std::endl;
 	ret = msg.find(delimiter);
 	_logger.logInput(msg);
 	if (ret == std::string::npos)
@@ -193,24 +193,54 @@ void	Server::getCmd(int fd, std::string msg)
 			msg = msg.substr(ret + delimiter.length());
 			vectorInput.push_back(lineToAdd);
 		}
+		vectorInput.push_back(msg);
 	}
 	treatVectorCmd(fd, vectorInput);
 	return ;
 }
 
+std::vector<std::string>	Server::splitString(std::string cmd, std::string delimiter)
+{
+	std::vector<std::string> myVector;
+	size_t					 ret;
+	std::string 			 stock = cmd;
+	 
+	std::cout << "FONCTION SPLISTRING CMD ; " << cmd << std::endl;
+	ret = stock.find(delimiter);
+	if (ret == std::string::npos)
+	{
+		myVector.push_back(stock);
+		return (myVector);
+	}
+	else
+	{
+		while ((ret = stock.find(delimiter)) != std::string::npos)
+		{
+			std::string lineToAdd = stock.substr(0, ret);
+			stock = stock.substr(ret + delimiter.length());
+			myVector.push_back(lineToAdd);
+		}
+		myVector.push_back(stock);
+	}
+	printStringVector(myVector);
+	return (myVector);
+}
+
 void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 {
 	std::string cmd;
+	std::vector<std::string> vectorSplit;
 	for (size_t i = 0; i < vectorCmd.size(); i++)
 	{
 		cmd = vectorCmd[i];
+		vectorSplit = splitString(cmd, " ");
 		if ((cmd.compare(0, 4, "PASS")) == 0)
 			checkPass(fd, cmd);
 		else if ((cmd.compare(0, 4, "NICK")) == 0)
 			checkNick(fd, cmd);
 		else if ((cmd.compare(0, 4, "USER")) == 0)
 			checkUser(fd,cmd);
-		else if ((cmd.compare(0, 4, "JOIN")) == 0)
+		else if ((vectorSplit[0] == "JOIN"))
 			handleChannels(fd, cmd);
 	}
 }
@@ -219,14 +249,12 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 
 void	Server::handleChannels(int fd, std::string cmd)
 {
-	(void)fd;
-	std::vector<std::string> namesChannels = splitCmdNameChannels(cmd);
-	std::vector<std::string> passwordsChannels = splitCmdPasswordChannels(cmd);
+	(void)cmd, (void)fd;
 	// Client *myClient = findClientByFd(fd);
 	// std::string channelName;
 	// size_t	nbPasswords = passwordsChannels.size() - 1;
 	
-	// VERIF NAMES CHANNELS
+
 	// for (size_t i = 0; i < namesChannels.size(); i++)
 	// {
 	// 	if (channelNameIsAcceptable(namesChannels[i]) == false)
@@ -235,14 +263,14 @@ void	Server::handleChannels(int fd, std::string cmd)
 	// 		return ;
 	// 	}
 	// }
-	for (size_t i = 0; i < namesChannels.size(); i++)
-	{
-		std::cout << "[" << i << "]" << " : " << namesChannels[i];
-	}
-	for (size_t i = 0; i < passwordsChannels.size(); i++)
-	{
-		std::cout << "[" << i << "]" << " : " << passwordsChannels[i];
-	}
+	// for (size_t i = 0; i < namesChannels.size(); i++)
+	// {
+	// 	std::cout << "[" << i << "]" << " : " << namesChannels[i] << std::endl;
+	// }
+	// for (size_t i = 0; i < passwordsChannels.size(); i++)
+	// {
+	// 	std::cout << "[" << i << "]" << " : " << passwordsChannels[i] << std::endl;
+	// }
 	// for (size_t i = 0; i < namesChannels.size(); i++)
 	// {
 	// 	channelName = namesChannels[i];
@@ -255,9 +283,10 @@ void	Server::handleChannels(int fd, std::string cmd)
 	// 	{
 	// 		Channel *myChannel = new Channel();
 	// 		myChannel->setName(channelName);
+	// 		std::cout << "nbpasswords : " << nbPasswords << std::endl;
+	// 		std::cout << "i : " << i << std::endl;
 	// 		if (i <= nbPasswords)
 	// 		{
-	// 			std::cout << "OUI";
 	// 			myChannel->setPassword(passwordsChannels[i]);
 	// 		}
 	// 		myChannel->addClientToChannel(myClient);
@@ -318,83 +347,6 @@ bool	Server::channelAlreadyExists(std::string channel)
 	return (false);
 }
 
-std::vector<std::string>	Server::splitCmdPasswordChannels(std::string cmd)
-{
-	size_t ret = 0;
-
-	std::string stock;
-	std::vector<std::string> vectorPassword;
-	std::string delimiter = ",";
-	
-	stock = cmd.substr(5);
-	ret = stock.find(" ");
-	if (ret == std::string::npos)
-	{
-		return (vectorPassword);
-	}
-	else
-	{
-		stock = stock.substr(ret + 1);
-		while ((ret = stock.find(delimiter)) != std::string::npos)
-		{
-			std::string lineToAdd = stock.substr(0, ret);
-			stock = stock.substr(ret + delimiter.length());
-			vectorPassword.push_back(lineToAdd);
-		}
-		vectorPassword.push_back(stock);
-	}
-	return (vectorPassword);
-}
-
-std::vector<std::string>	Server::splitCmdNameChannels(std::string cmd)
-{
-	size_t ret = 0;
-
-	std::string stock;
-	std::vector<std::string> vectorChannels;
-	std::string delimiter = ",";
-	size_t	space = 0;
-	
-	stock = cmd.substr(5);
-	ret = stock.find(" ");
-	space = ret;
-	if (ret == std::string::npos)
-	{
-		ret = stock.find(delimiter);
-		if (ret == std::string::npos)
-		{
-			vectorChannels.push_back(stock);
-			return (vectorChannels);
-		}
-		else
-		{
-			while ((ret = stock.find(delimiter)) != std::string::npos)
-			{
-					std::string lineToAdd = stock.substr(0, ret);
-					stock = stock.substr(ret + delimiter.length());
-					vectorChannels.push_back(lineToAdd);
-			}
-			std::string lineToAdd = stock.substr(0, space);
-			vectorChannels.push_back(lineToAdd);
-			return (vectorChannels);
-		}
-		vectorChannels.push_back(stock);
-		return vectorChannels;
-	}
-	else
-	{
-		stock = stock.substr(0, ret);
-		while ((ret = stock.find(delimiter)) != std::string::npos)
-		{
-				std::string lineToAdd = stock.substr(0, ret);
-				stock = stock.substr(ret + delimiter.length());
-				vectorChannels.push_back(lineToAdd);
-		}
-		std::string lineToAdd = stock.substr(0, space);
-		vectorChannels.push_back(lineToAdd);
-	}
-	return (vectorChannels);
-}
 
 Channel*	Server::findChannelByName(std::string name)
 {
@@ -641,4 +593,13 @@ bool	Server::channelNameIsAcceptable(std::string cmd)
 			return (false);
 	}
 	return (true);
+}
+
+void	printStringVector(std::vector<std::string> myVector)
+{
+	for (size_t i = 0; i < myVector.size(); i++)
+	{
+		std::cout << "[" << i << "]" << myVector[i] << std::endl;
+	}
+	return ;
 }

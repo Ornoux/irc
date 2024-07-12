@@ -6,7 +6,7 @@
 #    By: npatron <npatron@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/03 16:53:15 by npatron           #+#    #+#              #
-#    Updated: 2024/07/11 22:51:16 by npatron          ###   ########.fr        #
+#    Updated: 2024/07/12 16:51:41 by npatron          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ OBJS = $(SRCS:.cpp=.o)
 
 NAME = ircserv
 CC = c++
-CFLAGS = -Wall -Wextra  -Werror -std=c++98
+CFLAGS = -Wall -Wextra -g -Werror -std=c++98
 RM = rm -rf
 
 RESET = \033[0m

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+
+#define GRAS  "\033[1m"
 // Codes ANSI pour les couleurs
 #define RESET "\033[0m"
 #define RED "\033[31m"
@@ -30,6 +32,10 @@ class Logger
 
             void logInput(const std::string& message) {
                 std::cout << CYAN << "[INPUT] " << message << RESET << std::endl;
+            }
+
+            void logAccept(const std::string& message) {
+                std::cout << GRAS << MAGENTA << "[" << message << "] Accepted\n"<< RESET << std::endl;
             }
 
             void logOutput(const std::string& message) {

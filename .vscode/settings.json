@@ -49,7 +49,9 @@
 		"span": "cpp",
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
-		"typeinfo": "cpp"
+		"typeinfo": "cpp",
+		"ctime": "cpp",
+		"fstream": "cpp"
 	},
 	"C_Cpp.errorSquiggles": "disabled"
 }

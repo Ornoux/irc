@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 17:22:45 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 21:06:12 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ void    Server::loop(char **av)
 	char buff[1024];
 	int ret;
 	Client *myClient = new Client();
-	
+	(void)myClient;
 	launch_serv(av);
 	print_amazing();
 	std::cout << "Server launched" << std::endl;
@@ -180,7 +180,6 @@ void	Server::getCmd(int fd, std::string msg)
 	std::vector<std::string> vectorInput;
 	std::string delimiter = "\r\n";
 	size_t ret;
-	std::cout << "FONCTION GETCMD ; " << msg << std::endl;
 	ret = msg.find(delimiter);
 	_logger.logInput(msg);
 	if (ret == std::string::npos)
@@ -205,7 +204,6 @@ std::vector<std::string>	Server::splitString(std::string cmd, std::string delimi
 	size_t					 ret;
 	std::string 			 stock = cmd;
 	 
-	std::cout << "FONCTION SPLISTRING CMD ; " << cmd << std::endl;
 	ret = stock.find(delimiter);
 	if (ret == std::string::npos)
 	{
@@ -222,7 +220,6 @@ std::vector<std::string>	Server::splitString(std::string cmd, std::string delimi
 		}
 		myVector.push_back(stock);
 	}
-	printStringVector(myVector);
 	return (myVector);
 }
 
@@ -240,101 +237,121 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			checkNick(fd, cmd);
 		else if ((cmd.compare(0, 4, "USER")) == 0)
 			checkUser(fd,cmd);
-		else if ((vectorSplit[0] == "JOIN"))
-			handleChannels(fd, cmd);
+		else if ((vectorSplit[0] == "JOIN" && vectorSplit.size() != 1))
+			handleChannels(fd, cmd.substr(5));
 	}
 }
 
-// JOIN #channel1,#channel2 fubar,foobar
+// MSG =  #channel1,#channel2 fubar,foobar
+
+// vectorEverything[0] = #channel1,#channel2
+// vectorEverything[1] = fubar,foobar
 
 void	Server::handleChannels(int fd, std::string cmd)
 {
-	(void)cmd, (void)fd;
-	// Client *myClient = findClientByFd(fd);
-	// std::string channelName;
-	// size_t	nbPasswords = passwordsChannels.size() - 1;
-	
+	std::vector<std::string> vectorEverything = splitString(cmd, " ");
+	size_t	nbPasswords;
+	std::string channelName;
+	std::vector<std::string> namesChannels;
+	std::vector<std::string> passwordsChannels;
+	bool					passwordGived = false;
+	std::cout << vectorEverything.size() << std::endl;
 
-	// for (size_t i = 0; i < namesChannels.size(); i++)
-	// {
-	// 	if (channelNameIsAcceptable(namesChannels[i]) == false)
-	// 	{
-	// 		myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
-	// 		return ;
-	// 	}
-	// }
-	// for (size_t i = 0; i < namesChannels.size(); i++)
-	// {
-	// 	std::cout << "[" << i << "]" << " : " << namesChannels[i] << std::endl;
-	// }
-	// for (size_t i = 0; i < passwordsChannels.size(); i++)
-	// {
-	// 	std::cout << "[" << i << "]" << " : " << passwordsChannels[i] << std::endl;
-	// }
-	// for (size_t i = 0; i < namesChannels.size(); i++)
-	// {
-	// 	channelName = namesChannels[i];
-	// 	if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
-	// 	{
-	// 		myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
-	// 		return ;
-	// 	}
-	// 	if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
-	// 	{
-	// 		Channel *myChannel = new Channel();
-	// 		myChannel->setName(channelName);
-	// 		std::cout << "nbpasswords : " << nbPasswords << std::endl;
-	// 		std::cout << "i : " << i << std::endl;
-	// 		if (i <= nbPasswords)
-	// 		{
-	// 			myChannel->setPassword(passwordsChannels[i]);
-	// 		}
-	// 		myChannel->addClientToChannel(myClient);
-	// 		myChannel->addClientOperatorToChannel(myClient);
-	// 		_channelVector.push_back(myChannel);
-	// 		std::cout << "Channel created.\n";
-	// 		myChannel->printInfos();
-	// 	}
-	// 	else // CANAL EXISTS
-	// 	{
-	// 		Channel *myChannel = findChannelByName(channelName);
-	// 		if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
-	// 		{
-	// 			if (i <= nbPasswords) // PASSWORD GIVED
-	// 			{
-	// 				if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
-	// 				{
-	// 					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
-	// 					return ;
-	// 				}
-	// 				else
-	// 				{
-	// 					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
-	// 					myChannel->addClientToChannel(myClient);
-	// 				}
-	// 			}
-	// 			else // PASSWORD NOT GIVED WHILE IT REQUIRED
-	// 			{
-	// 				myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
-	// 				return ;
-	// 			}
-	// 		}
-	// 		else // CANAL EXISTS BUT DOESN'T NEED A PASSWORD
-	// 		{
-	// 			if (i <= nbPasswords)
-	// 			{
-	// 				myClient->sendRPL(channelName, ERR_KEYSET);
-	// 				return ;
-	// 			}	
-	// 			else
-	// 			{
-	// 				std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
-	// 				myChannel->addClientToChannel(myClient);
-	// 			}
-	// 		}
-	// 	}
+	if (vectorEverything.size() == 2)
+	{
+		namesChannels = splitString(vectorEverything[0], ",");
+		passwordsChannels = splitString(vectorEverything[1], ",");
+		if (passwordsChannels.empty() == false)
+			nbPasswords = passwordsChannels.size() - 1;
+		passwordGived = true;
+	}
+	else if (vectorEverything.size() == 1)
+		namesChannels = splitString(vectorEverything[0], ",");
+	else
+		return ;
+	Client *myClient = findClientByFd(fd);
+
+	for (size_t i = 0; i < namesChannels.size(); i++)
+	{
+		if (channelNameIsAcceptable(namesChannels[i]) == false)
+		{
+			myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
+			return ;
+		}
+	}
+
+	for (size_t i = 0; i < namesChannels.size(); i++)
+	{
+		channelName = namesChannels[i];
+		if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
+		{
+			myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
+			return ;
+		}
+		if (channelAlreadyExists(channelName) == false) // CHANNEL N'EXISTE PAS --> 
+		{
+			Channel *myChannel = new Channel();
+			myChannel->setName(channelName);
+			if (passwordGived == true)
+			{
+				if (i <= nbPasswords)
+				{
+					myChannel->setPassword(passwordsChannels[i]);
+				}
+			}
+			myClient->addToChannel(myChannel);
+			myChannel->addClientToChannel(myClient);
+			myChannel->addClientOperatorToChannel(myClient);
+			_channelVector.push_back(myChannel);
+			std::cout << "Channel created.\n";
+			myChannel->printInfos();
+		}
+		else // CANAL EXISTS
+		{
+			Channel *myChannel = findChannelByName(channelName);
+			if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
+			{
+				if (passwordGived == true)
+				{
+					if (i <= nbPasswords) // PASSWORD GIVED
+					{
+						if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
+						{
+							myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
+							return ;
+						}
+						else
+						{
+							std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+							myChannel->addClientToChannel(myClient);
+						}
+					}
+				}
+				else // PASSWORD NOT GIVED WHILE IT REQUIRED
+				{
+					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
+					return ;
+				}
+			}
+			else // CANAL EXISTS BUT DOESN'T NEED A PASSWORD
+			{
+				if (passwordGived == true)
+				{
+					if (i <= nbPasswords)
+					{
+						myClient->sendRPL(channelName, ERR_KEYSET);
+						return ;
+					}
+				}
+				else
+				{
+					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+					myChannel->addClientToChannel(myClient);
+				}
+			}
+		}
 		
-	// }	
+	}	
 }
 
 bool	Server::channelAlreadyExists(std::string channel)

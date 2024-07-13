@@ -9,6 +9,7 @@
 		"cstdio": "cpp",
 		"cstdlib": "cpp",
 		"cstring": "cpp",
+		"ctime": "cpp",
 		"cwchar": "cpp",
 		"cwctype": "cpp",
 		"array": "cpp",
@@ -19,7 +20,6 @@
 		"concepts": "cpp",
 		"cstdint": "cpp",
 		"deque": "cpp",
-		"map": "cpp",
 		"unordered_map": "cpp",
 		"vector": "cpp",
 		"exception": "cpp",
@@ -37,6 +37,7 @@
 		"tuple": "cpp",
 		"type_traits": "cpp",
 		"utility": "cpp",
+		"fstream": "cpp",
 		"initializer_list": "cpp",
 		"iosfwd": "cpp",
 		"iostream": "cpp",
@@ -49,9 +50,7 @@
 		"span": "cpp",
 		"stdexcept": "cpp",
 		"streambuf": "cpp",
-		"typeinfo": "cpp",
-		"ctime": "cpp",
-		"fstream": "cpp"
+		"typeinfo": "cpp"
 	},
 	"C_Cpp.errorSquiggles": "disabled"
 }

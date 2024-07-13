@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 15:33:04 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 18:49:43 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,20 +241,109 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			checkNick(fd, cmd);
 		else if ((cmd.compare(0, 4, "USER")) == 0)
 			checkUser(fd,cmd);
-		else if ((vectorSplit[0] == "JOIN" && vectorSplit.size() != 1))
-			handleChannels(fd, cmd.substr(5));
+		else if (vectorSplit[0] == "JOIN")
+			handleChannels(fd, cmd, vectorSplit);
+		else if (vectorSplit[0] == "KICK")
+			cmdKick(fd, cmd, vectorSplit);
+		// else if (vectorSplit[0] == "TOPIC")
+		// 	cmdTopic(fd, cmd, vectorSplit);	
 	}
 }
 
-
-void	Server::handleChannels(int fd, std::string cmd)
+void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit)
 {
+	Client* myClient = findClientByFd(fd);
+	std::string nameChannel;
+	if (vectorSplit.size() != 3) // BAD PARAM
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		myClient->sendRPL("KICK", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	nameChannel = vectorSplit[1];
+	if (channelAlreadyExists(nameChannel) == false) // CHANNEL NO EXISTING
+	{
+		_logger.logOutput("ERR_BADCHANMASK sent to client");
+		myClient->sendRPL(nameChannel, ERR_NOSUCHCHANNEL);		
+		return ;
+	}
+	else // CHANNEL EXISTING
+	{
+		Channel* myChannel = findChannelByName(nameChannel);
+		if (myClient->isInChannel(nameChannel) == false) // CLIENT ISN'T IN CHANNEL
+		{
+			_logger.logOutput("ERR_NOTONCHANNEL sent to client");
+			myClient->sendRPL(nameChannel, ERR_NOTONCHANNEL);		
+			return ;
+		}
+		else // CLIENT IS IN CHANNEL
+		{
+			if (myChannel->isClientOperator(myClient->getUser()) == false) // NOT OPERATOR
+			{
+				_logger.logOutput("ERR_CHANOPRIVSNEEDED sent to client");
+				myClient->sendRPL(nameChannel, ERR_CHANOPRIVSNEEDED);		
+				return ;
+			}		
+			else // CLIENT IS OPERATOR
+			{
+				std::vector<std::string> userKicked = splitString(vectorSplit[2], ",");
+				printStringVector(userKicked);
+				for (size_t i = 0; i < userKicked.size(); i++)
+				{
+					if (myChannel->isClientInChannel(userKicked[i]) == false) // USER KICK INEXISTANT
+					{
+						_logger.logOutput("ERR_USERNOTINCHANNEL sent to client");
+						myClient->sendRPL(nameChannel, ERR_USERNOTINCHANNEL);		
+						return ;
+					}
+					else // USER KICK IS IN CHANNEL
+					{
+						std::cout << "Before kick : " << myChannel->getSizeChannel() << std::endl;
+						_logger.logInput(myClient->getUser() + " :" + cmd);
+						myChannel->removeClient(userKicked[i]);
+						myClient->removeClientChannel(nameChannel);
+						std::cout << "After kick : " << myChannel->getSizeChannel() << std::endl;
+						std::cout << userKicked[i] << " remove from " << nameChannel << std::endl;
+					}
+				}
+				
+			}
+			
+		}
+	}
+
+
+	
+}
+
+void	Server::cmdTopic(int fd, std::string cmd, std::vector<std::string> vectorSplit)
+{
+	if (vectorSplit.size() == 1)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		myClient->sendRPL("TOPIC", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+
+
+	
+}
+
+void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit)
+{
+	Client *myClient = findClientByFd(fd);
+	if (vectorSplit.size() == 1)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		myClient->sendRPL("JOIN", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	cmd = cmd.substr(5);
 	std::vector<std::string> vectorEverything = splitString(cmd, " ");
 	size_t	nbPasswords;
 	std::string channelName;
 	std::vector<std::string> namesChannels;
 	std::vector<std::string> passwordsChannels;
-	Client *myClient = findClientByFd(fd);
 	bool					passwordGived = false;
 
 	if (vectorEverything.size() == 2)
@@ -268,11 +357,7 @@ void	Server::handleChannels(int fd, std::string cmd)
 	else if (vectorEverything.size() == 1)
 		namesChannels = splitString(vectorEverything[0], ",");
 	else
-	{
-		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
-		myClient->sendRPL("JOIN", ERR_NEEDMOREPARAMS);		
 		return ;
-	}
 
 	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
@@ -366,6 +451,8 @@ void	Server::handleChannels(int fd, std::string cmd)
 				else
 				{
 					myChannel->addClientToChannel(myClient);
+					myClient->addToChannel(myChannel);
+					
 					if (myChannel->hasTopic() == true)
 					{
 						myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
@@ -573,8 +660,7 @@ bool checkNormeCara(const char *str){
         }
         i++;
     }
-
-    return false;
+	return false;
 }
 bool checkSpace(char c, const char *str){
 	int i = 0;
@@ -590,8 +676,17 @@ bool checkSpace(char c, const char *str){
 
 void	Server::DeleteClientFromServ(int i)
 {
+	for (size_t j = 0; j < _channelVector.size(); j++)
+	{
+		if (_clientVector[i]->isInChannel(_channelVector[j]->getName()) == true)
+		{
+			std::cout << "Client deleted from " << _channelVector[j]->getName();
+			_channelVector.erase(_channelVector.begin() + j);
+		}
+	}
 	_logger.logInfo("Client disconnected");
 	close(_clientVector[i]->getSocket());
+	delete _clientVector[i];
 	_clientVector.erase(_clientVector.begin() + i);
 }
 

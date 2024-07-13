@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 13:30:22 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 14:39:42 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,13 +132,12 @@ bool	Client::isInChannel(std::string channel)
 	return (false);
 }
 
+
 void	Client::sendRPL(std::string base, const char *rpl)
 {
-	std::string msg = base + " :" + rpl;
+	std::string msg = base + " :" + rpl + "\n";
 	_logger.logOutput(msg);
-	send(_socket, msg.c_str(), msg.size(), 0);
-	send(_socket, "\n", 1, 0);
-	return ;
+	send(_socket, msg.c_str(), msg.size(), 0);	return ;
 }
 
 void	Client::printInfos(void)

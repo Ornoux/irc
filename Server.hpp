@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 13:33:22 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 14:24:56 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@
 #define ERR_USERONCHANNEL "is already on channel"
 #define ERR_BADCHANNELKEY "Cannot join channel"
 #define ERR_KEYSET "Channel key already set"
-
+#define RPL_NOTOPIC "No topic is set"
+#define RPL_ENDOFNAMES "End of NAMES list"
 //NICK
 #define ERR_NONICKNAMEGIVEN "No nickname given"
 #define ERR_ERRONEUSNICKNAME "Erroneous nickname"

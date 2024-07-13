@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 13:32:41 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 15:33:04 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,8 +254,8 @@ void	Server::handleChannels(int fd, std::string cmd)
 	std::string channelName;
 	std::vector<std::string> namesChannels;
 	std::vector<std::string> passwordsChannels;
+	Client *myClient = findClientByFd(fd);
 	bool					passwordGived = false;
-	std::cout << vectorEverything.size() << std::endl;
 
 	if (vectorEverything.size() == 2)
 	{
@@ -268,13 +268,17 @@ void	Server::handleChannels(int fd, std::string cmd)
 	else if (vectorEverything.size() == 1)
 		namesChannels = splitString(vectorEverything[0], ",");
 	else
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		myClient->sendRPL("JOIN", ERR_NEEDMOREPARAMS);		
 		return ;
-	Client *myClient = findClientByFd(fd);
+	}
 
 	for (size_t i = 0; i < namesChannels.size(); i++)
 	{
 		if (channelNameIsAcceptable(namesChannels[i]) == false)
 		{
+			_logger.logOutput("ERR_BADCHANMASK sent to client");
 			myClient->sendRPL(namesChannels[i], ERR_BADCHANMASK);
 			return ;
 		}
@@ -285,6 +289,7 @@ void	Server::handleChannels(int fd, std::string cmd)
 		channelName = namesChannels[i];
 		if (myClient->isInChannel(namesChannels[i]) == true) // ERROR// CLIENT DANS LE CHANNEL //
 		{
+			_logger.logOutput("ERR_USERONCHANNEL sent to client");
 			myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_USERONCHANNEL);
 			return ;
 		}
@@ -295,16 +300,15 @@ void	Server::handleChannels(int fd, std::string cmd)
 			if (passwordGived == true)
 			{
 				if (i <= nbPasswords)
-				{
 					myChannel->setPassword(passwordsChannels[i]);
-				}
 			}
 			myClient->addToChannel(myChannel);
 			myChannel->addClientToChannel(myClient);
 			myChannel->addClientOperatorToChannel(myClient);
 			_channelVector.push_back(myChannel);
-			std::cout << "Channel created.\n";
-			myChannel->printInfos();
+			_logger.logOutput("RPL_NAMREPLY sent to client");
+			myChannel->sendRPL_NAMREPLY(fd);
+			myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
 		}
 		else // CANAL EXISTS
 		{
@@ -317,6 +321,7 @@ void	Server::handleChannels(int fd, std::string cmd)
 					{
 						if (passwordsChannels[i] != myChannel->getPassword()) // BAD PASSWORD
 						{
+							_logger.logOutput(ERR_BADCHANNELKEY);
 							myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
 							return ;
 						}
@@ -324,11 +329,25 @@ void	Server::handleChannels(int fd, std::string cmd)
 						{
 							std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 							myChannel->addClientToChannel(myClient);
+							_logger.logOutput("RPL_NAMREPLY sent to client");
+							myChannel->sendRPL_NAMREPLY(fd);
+							myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+							if (myChannel->hasTopic() == true)
+							{
+								myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+								_logger.logOutput("Channel topic sent to client");
+							}
+							else
+							{
+								myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+								_logger.logOutput("RPL_NOTOPIC sent");
+							}
 						}
 					}
 				}
 				else // PASSWORD NOT GIVED WHILE IT REQUIRED
 				{
+					_logger.logOutput(ERR_BADCHANNELKEY);
 					myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
 					return ;
 				}
@@ -339,14 +358,30 @@ void	Server::handleChannels(int fd, std::string cmd)
 				{
 					if (i <= nbPasswords)
 					{
+						_logger.logOutput(ERR_KEYSET);
 						myClient->sendRPL(channelName, ERR_KEYSET);
 						return ;
 					}
 				}
 				else
 				{
-					std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 					myChannel->addClientToChannel(myClient);
+					if (myChannel->hasTopic() == true)
+					{
+						myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+						_logger.logOutput("Channel topic sent to client");
+						_logger.logOutput("RPL_NAMREPLY sent to client");
+						myChannel->sendRPL_NAMREPLY(fd);
+						myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+					}
+					else
+					{
+						myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+						_logger.logOutput("RPL_NOTOPIC sent");
+						_logger.logOutput("RPL_NAMREPLY sent to client");
+						myChannel->sendRPL_NAMREPLY(fd);
+						myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+					}
 				}
 			}
 		}

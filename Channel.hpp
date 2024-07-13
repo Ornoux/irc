@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:13:03 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 16:33:31 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 14:18:42 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ class Channel
 			void		addClientToChannel(Client* myClient);
 			void		addClientOperatorToChannel(Client* myClient);
 			void		printInfos(void);
+			void		sendRPL_NAMREPLY(int fd);
+			bool		isClientOperator(std::string user);
 	private: 
 			
 			

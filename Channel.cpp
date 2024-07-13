@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 16:51:24 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 15:30:14 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,36 @@ void	Channel::addClientToChannel(Client *myClient)
 void	Channel::addClientOperatorToChannel(Client *myClient)
 {
 	_clientsOperators.push_back(myClient);
+}
+
+// :irc.example.com 353 Alice = #example :@Bob +Carol Dave
+
+bool	Channel::isClientOperator(std::string user)
+{
+	for (size_t i = 0; i < _clientsOperators.size(); i++)
+	{
+		if (user == _clientsOperators[i]->getUser())
+			return (true);
+	}
+	return (false);
+}
+
+void	Channel::sendRPL_NAMREPLY(int fd)
+{
+	std::string list;
+	std::string username;
+	list = _name + " :";
+	std::cout << _clientsChannel.size() << std::endl;
+	for (size_t i = 0; i < _clientsChannel.size(); i++)
+	{
+		username = _clientsChannel[i]->getUser();
+		if (isClientOperator(username) == true)
+			list += "@" + username + " ";
+		else
+			list += username + " ";
+	}
+	list += "\n";
+	send(fd, list.c_str(), list.size(), 0);
 }
 
 void	Channel::printInfos(void)

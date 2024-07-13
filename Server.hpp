@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 14:24:56 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 16:58:26 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,17 @@
 #define ERR_KEYSET "Channel key already set"
 #define RPL_NOTOPIC "No topic is set"
 #define RPL_ENDOFNAMES "End of NAMES list"
+
 //NICK
 #define ERR_NONICKNAMEGIVEN "No nickname given"
 #define ERR_ERRONEUSNICKNAME "Erroneous nickname"
 #define ERR_NICKNAMEINUSE "Nickname is already in use"
 
+//KICK
+#define ERR_CHANOPRIVSNEEDED "You're not channel operator"
+#define ERR_NOSUCHCHANNEL "No such channel"
+#define ERR_USERNOTINCHANNEL "They aren't on that channel"
+#define ERR_NOTONCHANNEL "You're not on that channel"
 
 class Server
 {
@@ -93,10 +99,12 @@ class Server
 			void							checkNick(int fd, std::string cmd);
 			void							checkUser(int fd, std::string cmd);
 			void							getNick(int fd, std::string cmd);
+			void							cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit);
+			void							cmdTopic(int fd, std::string cmd, std::vector<std::string> vectorSplit);
 
 			// CMD CHANNELS
 
-			void							handleChannels(int fd, std::string cmd);
+			void							handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit);
 			bool							channelNameIsAcceptable(std::string cmd);
 			bool							channelNameIsFree(std::string cmd);
 			bool							channelAlreadyExists(std::string cmd);

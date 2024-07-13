@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 14:39:42 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 18:22:18 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,19 @@ bool	Client::isInChannel(std::string channel)
 			return (true);
 	}
 	return (false);
+}
+
+void	Client::removeClientChannel(std::string channel)
+{
+	for (size_t i = 0; i < _channels.size(); i++)
+	{
+		if (channel == _channels[i]->getName())
+		{
+			_channels.erase(_channels.begin() + i);
+			return ;
+		}
+	}
+	return ;
 }
 
 

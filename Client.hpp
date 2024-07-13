@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 14:10:46 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 18:20:59 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ class Client
 			
 			bool		isInChannel(std::string channel);
 			void		addToChannel(Channel *channel);
+			void		removeClientChannel(std::string client);
 			void		sendRPL(std::string base, const char *error_msg);
 			void		printInfos(void);
 

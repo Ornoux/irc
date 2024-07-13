@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:13:03 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 14:18:42 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 18:40:53 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class Channel
 			std::string getPassword(void);
 			std::string getTopic(void);
 			std::string getName(void);
+			size_t		getSizeChannel(void) {return (_clientsChannel.size());}
 			void		setName(std::string name);
 			void		setPassword(std::string name);
 			void		setTopic(std::string name);
@@ -38,6 +39,8 @@ class Channel
 			void		printInfos(void);
 			void		sendRPL_NAMREPLY(int fd);
 			bool		isClientOperator(std::string user);
+			bool		isClientInChannel(std::string user);
+			void		removeClient(std::string user);
 	private: 
 			
 			

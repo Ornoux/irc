@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 15:30:14 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 18:38:29 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,39 @@ bool	Channel::isClientOperator(std::string user)
 			return (true);
 	}
 	return (false);
+}
+
+bool	Channel::isClientInChannel(std::string user)
+{
+	for (size_t i = 0; i < _clientsChannel.size(); i++)
+	{
+		if (user == _clientsChannel[i]->getUser())
+			return (true);
+	}
+	return (false);
+}
+
+void	Channel::removeClient(std::string user)
+{
+	for (size_t i = 0; i < _clientsChannel.size(); i++)
+	{
+		if (user == _clientsChannel[i]->getUser())
+		{
+			std::cout << "CLIENT TROUVER" << std::endl;
+			_clientsChannel.erase(_clientsChannel.begin() + i);
+			return ;
+		}
+	}
+	for (size_t i = 0; i < _clientsOperators.size(); i++)
+	{
+		if (user == _clientsOperators[i]->getUser())
+		{
+			std::cout << "CLIENT TROUVER OPERA" << std::endl;
+			_clientsOperators.erase(_clientsOperators.begin() + i);
+			return ;
+		}
+	}
+	return ;	
 }
 
 void	Channel::sendRPL_NAMREPLY(int fd)

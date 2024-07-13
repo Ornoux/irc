@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:13:03 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 18:40:53 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 22:15:00 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ class Channel
 			void		setName(std::string name);
 			void		setPassword(std::string name);
 			void		setTopic(std::string name);
-			
+			void		setBoolTopic(bool topic) {_thereIsTopic = topic;}
+			void		sendNotifToClients(std::string id);
 			bool		hasPassword(void) {return _thereIsPassword;}
 			bool		hasTopic(void) {return _thereIsTopic;}
 			bool		channelAlreadyExists(std::string name);

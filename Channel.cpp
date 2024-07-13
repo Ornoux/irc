@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 18:38:29 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 22:56:24 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,18 @@ void	Channel::removeClient(std::string user)
 			return ;
 		}
 	}
-	return ;	
+	return ;
+}
+
+void	Channel::sendNotifToClients(std::string id)
+{
+	int client_socket;
+	for (size_t i = 0; i < _clientsChannel.size(); i++)
+	{
+		client_socket = _clientsChannel[i]->getSocket();
+		send(client_socket, id.c_str(), id.size(), 0);
+	}
+	return ;
 }
 
 void	Channel::sendRPL_NAMREPLY(int fd)

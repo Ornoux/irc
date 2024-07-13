@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 18:49:43 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/13 22:40:50 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,8 +245,8 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			handleChannels(fd, cmd, vectorSplit);
 		else if (vectorSplit[0] == "KICK")
 			cmdKick(fd, cmd, vectorSplit);
-		// else if (vectorSplit[0] == "TOPIC")
-		// 	cmdTopic(fd, cmd, vectorSplit);	
+		else if (vectorSplit[0] == "TOPIC")
+			cmdTopic(fd, vectorSplit);	
 	}
 }
 
@@ -298,11 +298,9 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 					}
 					else // USER KICK IS IN CHANNEL
 					{
-						std::cout << "Before kick : " << myChannel->getSizeChannel() << std::endl;
 						_logger.logInput(myClient->getUser() + " :" + cmd);
 						myChannel->removeClient(userKicked[i]);
 						myClient->removeClientChannel(nameChannel);
-						std::cout << "After kick : " << myChannel->getSizeChannel() << std::endl;
 						std::cout << userKicked[i] << " remove from " << nameChannel << std::endl;
 					}
 				}
@@ -316,17 +314,80 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 	
 }
 
-void	Server::cmdTopic(int fd, std::string cmd, std::vector<std::string> vectorSplit)
+void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 {
-	if (vectorSplit.size() == 1)
+	Client *myClient = findClientByFd(fd);
+	std::string nameChannel;
+	std::string topic;
+	if (vectorSplit.size() == 1 || vectorSplit.size() > 3)
 	{
 		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
 		myClient->sendRPL("TOPIC", ERR_NEEDMOREPARAMS);		
 		return ;
 	}
-
-
-	
+	else
+	{
+		nameChannel = vectorSplit[1];
+		if (channelAlreadyExists(nameChannel) == false) // CHANNEL NO EXISTING
+		{
+			_logger.logOutput("ERR_BADCHANMASK sent to client");
+			myClient->sendRPL(nameChannel, ERR_NOSUCHCHANNEL);		
+			return ;
+		}
+		else // CHANNEL EXISTS
+		{
+			Channel* myChannel = findChannelByName(nameChannel);
+			if (vectorSplit.size() == 2) // ONLY 2 ARGS LIKE ./TOPIC <channel>
+			{
+				if (myChannel->isClientInChannel(myClient->getUser()) == false) // USER NON IN THE CHANNEL
+				{
+					_logger.logOutput("ERR_USERNOTINCHANNEL sent to client");
+					myClient->sendRPL(nameChannel, ERR_USERNOTINCHANNEL);		
+					return ;
+				}
+				else // CLIENT IN THE CHANNEL
+				{
+					if (myChannel->hasTopic() == false) // NO TOPIC
+					{
+						_logger.logOutput("RPL_NOTOPIC sent to client");
+						myClient->sendRPL(nameChannel, RPL_NOTOPIC);
+						return ;
+					}
+					else // THERE IS A TOPIC
+					{
+						myClient->sendRPL(myClient->getNick() + " " + nameChannel, myChannel->getTopic().c_str());
+						return ;					
+					}
+				}
+			}
+			else // 3 ARGS LIKE ./TOPIC <channel> <NEW CHANNEL??>
+			{
+				if (myChannel->isClientOperator(myClient->getUser()) == false) // CLIENT NON-OPERATOR
+				{
+					_logger.logOutput("ERR_CHANOPRIVSNEEDED sent to client");
+					myClient->sendRPL(nameChannel, ERR_CHANOPRIVSNEEDED);		
+					return ;
+				}
+				else // CLIENT OPERATOR
+				{
+					if (vectorSplit[2].size() == 0)
+					{
+						myChannel->setBoolTopic(false);
+						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic);
+						return ;
+					}
+					else
+					{
+						topic = vectorSplit[2];
+						myChannel->setBoolTopic(true);
+						myChannel->setTopic(topic);
+						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic);
+						return ;
+					}
+				}
+			}	
+		}		
+	}	
 }
 
 void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit)

@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 13:29:44 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/12 21:04:57 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Client
 			void		setBoolAuthenticate(bool var);
 			
 			bool		isInChannel(std::string channel);
+			void		addToChannel(Channel *channel);
 			void		sendRPL(std::string base, const char *error_msg);
 			void		printInfos(void);
 
@@ -70,7 +71,7 @@ class Client
 			std::string	_username;
 			std::string	_realname;
 			
-			std::vector<Channel> _channels;
+			std::vector<Channel*> _channels;
 			bool		_authenticate;
 			bool		_pass;
 			bool		_user;

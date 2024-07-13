@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 19:12:18 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/13 13:33:22 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,59 +62,55 @@ class Server
 
 			// SETTERS && GETTERS
 
-			unsigned int getPort();
-			void		 setPort(unsigned int port);
-
-			std::string getPassword();
-			
-			int			getSocket();
-			void		setSocket(int sock);
-				
-			void		setPassword(char *pass);
+			unsigned int 					getPort();
+			void		 					setPort(unsigned int port);
+			int								getSocket();
+			void							setSocket(int sock);			
+			void							setPassword(char *pass);
+			std::string 					getPassword();
 			
 			// MEMBER FUNCTIONS
 			
-			void		loop(char **av);
-			void		launch_serv(char **av);
-			Client*		AddClientToVector();
-			void		DeleteClientFromServ(int i);
-			void		check_signal(void);
-			void		check_clients_here();
-			bool		isClientDisconnected(int fd);
-			void		getCmd(int fd, std::string cmd);
-			void		treatVectorCmd(int fd, std::vector<std::string> vectorCmd);
-			void		printClient(void);
-			void		isAuthenticate(Client *myClient);
-			Client*		findClientByFd(int fd);
-			Channel*	findChannelByName(std::string name);
+			void							loop(char **av);
+			void							launch_serv(char **av);
+			void							DeleteClientFromServ(int i);
+			void							check_signal(void);
+			void							check_clients_here();
+			bool							isClientDisconnected(int fd);
+			void							getCmd(int fd, std::string cmd);
+			void							treatVectorCmd(int fd, std::vector<std::string> vectorCmd);
+			void							printClient(void);
+			void							isAuthenticate(Client *myClient);
+			Client*							AddClientToVector();
+			Client*							findClientByFd(int fd);
+			Channel*						findChannelByName(std::string name);
 			
 			// CMD AUTH
 
-			void		checkPass(int fd, std::string cmd);
-			void		checkNick(int fd, std::string cmd);
-			void		checkUser(int fd, std::string cmd);
-			void		getNick(int fd, std::string cmd);
-			bool		similarNick(const char *nick);
+			bool							similarNick(const char *nick);
+			void							checkPass(int fd, std::string cmd);
+			void							checkNick(int fd, std::string cmd);
+			void							checkUser(int fd, std::string cmd);
+			void							getNick(int fd, std::string cmd);
 
 			// CMD CHANNELS
 
 			void							handleChannels(int fd, std::string cmd);
 			bool							channelNameIsAcceptable(std::string cmd);
 			bool							channelNameIsFree(std::string cmd);
+			bool							channelAlreadyExists(std::string cmd);
 			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
 			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
-			bool							channelAlreadyExists(std::string cmd);
-			
-
-
+			std::vector<std::string>		splitString(std::string cmd, std::string delimiter);
+	
 	private:
-			unsigned int	_port;
-			int				_socket;
-			std::string		_password;
-			std::vector<Client*>	_clientVector;
-			std::vector<Channel*> _channelVector;
-			int				_nbClients;
-			Logger			_logger;
+			unsigned int					_port;
+			int								_socket;
+			int								_nbClients;
+			std::string						_password;
+			Logger							_logger;
+			std::vector<Client*>			_clientVector;
+			std::vector<Channel*> 			_channelVector;
 };
 
 // UTILS
@@ -126,6 +122,6 @@ void	signal_action(int s);
 int		int_max(char *str);
 bool	checkSpace(char c, const char *str);
 bool	checkNormeCara(const char *str);
-
+void	printStringVector(std::vector<std::string> myVector);
 
 

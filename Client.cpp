@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/12 19:10:55 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/13 13:30:22 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,11 +117,16 @@ std::string Client::getRealName(void) const
 	return (this->_realname);
 }
 
+void	Client::addToChannel(Channel* channel)
+{
+	_channels.push_back(channel);
+}
+
 bool	Client::isInChannel(std::string channel)
 {
 	for (size_t i = 0; i < _channels.size(); i++)
 	{
-		if (channel == _channels[i].getName())
+		if (channel == _channels[i]->getName())
 			return (true);
 	}
 	return (false);

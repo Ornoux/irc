@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 22:47:55 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 10:07:27 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,9 +134,4 @@ bool	checkSpace(char c, const char *str);
 bool	checkNormeCara(const char *str);
 void	printStringVector(std::vector<std::string> myVector);
 
-
-
-SERVEUR ---> CLIENT connection 
-
-SOCKET 
 

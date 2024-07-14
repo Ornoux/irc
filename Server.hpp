@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 16:58:26 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 10:07:27 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,11 +100,12 @@ class Server
 			void							checkUser(int fd, std::string cmd);
 			void							getNick(int fd, std::string cmd);
 			void							cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit);
-			void							cmdTopic(int fd, std::string cmd, std::vector<std::string> vectorSplit);
+			void							cmdTopic(int fd,std::vector<std::string> vectorSplit);
 
 			// CMD CHANNELS
 
 			void							handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit);
+			void							sendNotifTopicToClients(int fd_sender, Channel* myChannel);
 			bool							channelNameIsAcceptable(std::string cmd);
 			bool							channelNameIsFree(std::string cmd);
 			bool							channelAlreadyExists(std::string cmd);

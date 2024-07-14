@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 16:53:37 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 20:33:01 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,6 +175,23 @@ void	Server::printClient()
 	return ;
 }
 
+std::string Server::stockCtrl(std::string msg){
+	std::string msgR;
+	if (_ctrl.empty()){
+		_ctrl = msg;
+	}
+	else{
+		_ctrl = _ctrl + msg;		
+	}
+	
+	if (_ctrl[_ctrl.length() - 1] == '\n'){
+		_ctrl = _ctrl.substr(0, _ctrl.size() - 1);
+		msgR = _ctrl;
+		_ctrl.clear();
+	}
+	return (msgR);
+}
+
 void	Server::getCmd(int fd, std::string msg)
 {
 	std::vector<std::string> vectorInput;
@@ -183,9 +200,11 @@ void	Server::getCmd(int fd, std::string msg)
 	ret = msg.find(delimiter);
 	if (ret == std::string::npos)
 	{
-		msg = msg.substr(0, msg.size() - 1);
-		_logger.logInput(msg);
-		vectorInput.push_back(msg);
+		msg = stockCtrl(msg);
+		if (!(msg.empty())){
+			_logger.logInput(msg);
+			vectorInput.push_back(msg);
+		}
 	}
 	else
 	{

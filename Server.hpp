@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 16:37:47 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 20:33:36 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,7 @@ class Server
 			
 			// CMD AUTH
 
+			std::string 					stockCtrl(std::string msg);
 			bool							similarNick(const char *nick);
 			void							checkPass(int fd, std::string cmd);
 			void							checkNick(int fd, std::string cmd);
@@ -127,6 +128,7 @@ class Server
 			Logger							_logger;
 			std::vector<Client*>			_clientVector;
 			std::vector<Channel*> 			_channelVector;
+			std::string 					_ctrl;
 };
 
 // UTILS

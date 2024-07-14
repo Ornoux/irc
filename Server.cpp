@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 22:40:50 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 15:08:58 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,6 +253,8 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit)
 {
 	Client* myClient = findClientByFd(fd);
+	if (myClient->getBoolAuthenticate() == false)
+		return ;
 	std::string nameChannel;
 	if (vectorSplit.size() != 3) // BAD PARAM
 	{
@@ -298,9 +300,10 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 					}
 					else // USER KICK IS IN CHANNEL
 					{
+						Client *kickClient = findClientByUser(userKicked[i]);
 						_logger.logInput(myClient->getUser() + " :" + cmd);
 						myChannel->removeClient(userKicked[i]);
-						myClient->removeClientChannel(nameChannel);
+						kickClient->removeClientChannel(nameChannel);
 						std::cout << userKicked[i] << " remove from " << nameChannel << std::endl;
 					}
 				}
@@ -317,6 +320,8 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 {
 	Client *myClient = findClientByFd(fd);
+	if (myClient->getBoolAuthenticate() == false)
+		return ;
 	std::string nameChannel;
 	std::string topic;
 	if (vectorSplit.size() == 1 || vectorSplit.size() > 3)
@@ -393,6 +398,8 @@ void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit)
 {
 	Client *myClient = findClientByFd(fd);
+	if (myClient->getBoolAuthenticate() == false)
+		return ;
 	if (vectorSplit.size() == 1)
 	{
 		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
@@ -554,6 +561,16 @@ Channel*	Server::findChannelByName(std::string name)
 	{
 		if (_channelVector[i]->getName() == name)
 			return (_channelVector[i]);
+	}
+	return (NULL);
+}
+
+Client*	Server::findClientByUser(std::string user)
+{
+	for (size_t i = 0; _clientVector.size(); i++)
+	{
+		if (_clientVector[i]->getUser() == user)
+			return (_clientVector[i]);
 	}
 	return (NULL);
 }

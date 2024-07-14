@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 10:07:27 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 14:39:57 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ class Server
 			void							isAuthenticate(Client *myClient);
 			Client*							AddClientToVector();
 			Client*							findClientByFd(int fd);
+			Client*							findClientByUser(std::string user);
 			Channel*						findChannelByName(std::string name);
 			
 			// CMD AUTH

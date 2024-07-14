@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 18:20:59 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 15:43:20 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ class Client
 			void		removeClientChannel(std::string client);
 			void		sendRPL(std::string base, const char *error_msg);
 			void		printInfos(void);
+			void		addInvitation(Channel* _channel) {_channelsInvited.push_back(_channel);}
 
 	private:
 			int			_socket;
@@ -73,6 +74,7 @@ class Client
 			std::string	_realname;
 			
 			std::vector<Channel*> _channels;
+			std::vector<Channel*> _channelsInvited;
 			bool		_authenticate;
 			bool		_pass;
 			bool		_user;

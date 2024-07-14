@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 15:08:58 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 16:53:37 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,8 +246,89 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 		else if (vectorSplit[0] == "KICK")
 			cmdKick(fd, cmd, vectorSplit);
 		else if (vectorSplit[0] == "TOPIC")
-			cmdTopic(fd, vectorSplit);	
+			cmdTopic(fd, vectorSplit);
+		else if (vectorSplit[0] == "INVITE")
+			cmdInvite(fd, vectorSplit);
 	}
+}
+
+void	Server::cmdInvite(int fd, std::vector<std::string> vectorSplit)
+{
+	Client* senderClient = findClientByFd(fd);
+	if (vectorSplit.size() == 1 || vectorSplit.size() == 2)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		senderClient->sendRPL("INVITE", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	else if (vectorSplit.size() != 3)
+		return ;
+	else // GOOOD PARAMS
+	{
+		std::string invitedUserClient = vectorSplit[1];
+		std::string channelName;
+		if (isClientExisting(invitedUserClient) == false) // CLIENT INVITED NO EXISTS
+		{
+			_logger.logOutput("ERR_NOSUCKNICK sent to client");
+			senderClient->sendRPL(invitedUserClient.c_str(), ERR_NOSUCKNICK);		
+			return ;
+		}
+		else // CLIENT INVITED EXISTS
+		{
+			channelName = vectorSplit[2];
+			if (channelAlreadyExists(channelName) == false)
+			{
+				_logger.logOutput("ERR_NOSUCKNICK sent to client");
+				senderClient->sendRPL(channelName.c_str(), ERR_NOSUCKNICK);		
+				return ;
+			}
+			else // CLIENT AND CHANNEL EXISTS
+			{
+				if (senderClient->isInChannel(channelName) == false) // CLIENT SENDER NOT IN CHANNEL
+				{
+					_logger.logOutput("ERR_NOTONCHANNEL sent to client");
+					senderClient->sendRPL(channelName.c_str(), ERR_NOTONCHANNEL);		
+					return ;
+				}
+				else // SENDER CLIENT IS IN THE CHANNEL
+				{
+					Channel *myChannel = findChannelByName(channelName);
+					if (myChannel->isClientInChannel(invitedUserClient) == true)
+					{
+						_logger.logOutput("ERR_USERONCHANNEL sent to client");
+						senderClient->sendRPL(channelName.c_str(), ERR_USERONCHANNEL);		
+						return ;
+					}
+					else
+					{
+						if (myChannel->isClientOperator(senderClient->getUser()) == false) // SENDER CLIENT NOT OPERATOR ON THE CHANNEL
+						{
+							if (myChannel->getIsInviteOnly() == true) // CHANNEL IS ON INVITE-ONLY-MODE
+							{
+								_logger.logOutput("ERR_CHANOPRIVSNEEDED sent to client");
+								senderClient->sendRPL(channelName.c_str(), ERR_CHANOPRIVSNEEDED);		
+								return ;
+							}
+							else // CHANNEL IS OPEN
+							{
+								Client* invitedClient = findClientByUser(invitedUserClient);
+								invitedClient->addInvitation(myChannel);
+								_logger.logOutput("Client found. Invitation sent.");
+								senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());		
+							}
+						}
+						else // SENDER CLIENT IS OPERATOR
+						{
+							Client* invitedClient = findClientByUser(invitedUserClient);
+							invitedClient->addInvitation(myChannel);
+							_logger.logOutput("Client found. Invitation sent.");
+							senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());		
+						}
+					}
+				}
+			}
+		}
+	}	
 }
 
 void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit)
@@ -720,6 +801,16 @@ void	Server::checkUser(int fd, std::string cmd)
 		}
 	}
 	return; 
+}
+
+bool	Server::isClientExisting(std::string user)
+{
+	for (size_t i = 0; i < _clientVector.size(); i++)
+	{
+		if (_clientVector[i]->getUser() == user)
+			return (true);
+	}
+	return (false);
 }
 
 bool checkNormeCara(const char *str){

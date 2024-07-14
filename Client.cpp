@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 18:22:18 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 14:41:34 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,9 +148,11 @@ void	Client::removeClientChannel(std::string channel)
 
 void	Client::sendRPL(std::string base, const char *rpl)
 {
-	std::string msg = base + " :" + rpl + "\n";
+	std::string msg = base + " :" + rpl;
 	_logger.logOutput(msg);
-	send(_socket, msg.c_str(), msg.size(), 0);	return ;
+	send(_socket, msg.c_str(), msg.size(), 0);	
+	send(_socket, "\n", 1, 0);	
+	return ;
 }
 
 void	Client::printInfos(void)

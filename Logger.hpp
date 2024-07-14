@@ -5,6 +5,7 @@
 #include <ctime>
 
 #define GRAS  "\033[1m"
+
 // Codes ANSI pour les couleurs
 #define RESET "\033[0m"
 #define RED "\033[31m"

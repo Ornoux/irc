@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:13:03 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/13 22:15:00 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/14 15:40:29 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@ class Channel
 			std::string getTopic(void);
 			std::string getName(void);
 			size_t		getSizeChannel(void) {return (_clientsChannel.size());}
+			bool		getIsInviteOnly(void) {return _isInviteOnly;}
+			void		setIsInviteOnly(bool invite) {_isInviteOnly = invite;}
 			void		setName(std::string name);
 			void		setPassword(std::string name);
 			void		setTopic(std::string name);
@@ -47,6 +49,7 @@ class Channel
 			
 			bool		_thereIsPassword;
 			bool		_thereIsTopic;
+			bool		_isInviteOnly;
 			std::string _name;
 			std::string _password;
 			std::string _topic;

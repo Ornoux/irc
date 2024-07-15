@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 20:03:54 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:13:05 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,9 @@
 #define ERR_USERNOTINCHANNEL "They aren't on that channel"
 #define ERR_NOTONCHANNEL "You're not on that channel"
 
+//INVITE
+#define ERR_NOSUCKNICK "No such nick/channel"
+
 class Server
 {
 	public:
@@ -103,6 +106,7 @@ class Server
 			void							getNick(int fd, std::string cmd);
 			void							cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit);
 			void							cmdTopic(int fd,std::vector<std::string> vectorSplit);
+			void							cmdInvite(int fd, std::vector<std::string> vectorSplit);
 
 			// CMD CHANNELS
 
@@ -111,6 +115,7 @@ class Server
 			bool							channelNameIsAcceptable(std::string cmd);
 			bool							channelNameIsFree(std::string cmd);
 			bool							channelAlreadyExists(std::string cmd);
+			bool							isClientExisting(std::string user);
 			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
 			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
 			std::vector<std::string>		splitString(std::string cmd, std::string delimiter);

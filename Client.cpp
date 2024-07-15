@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 18:54:24 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:12:58 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,8 +150,8 @@ void	Client::sendRPL(std::string base, const char *rpl)
 {
 	std::string msg = base + " :" + rpl;
 	_logger.logOutput(msg);
-	send(_socket, msg.c_str(), msg.size(), 0);	
-	send(_socket, "\n", 1, 0);	
+	send(_socket, msg.c_str(), msg.size(), 0);
+	send(_socket, "\n", 1, 0);
 	return ;
 }
 

@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 16:18:31 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 19:26:44 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -272,6 +272,8 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			cmdTopic(fd, vectorSplit);
 		else if (vectorSplit[0] == "INVITE")
 			cmdInvite(fd, vectorSplit);
+		else if (vectorSplit[0] == "PRIVMSG")
+			cmdPrvMessage(fd, vectorSplit);
 	}
 }
 
@@ -727,6 +729,15 @@ void	Server::checkPass(int fd, std::string cmd)
 	}
 	return ;
 }
+
+int		Server::takeSocket(std::string msg){
+	for (size_t i = 0; i < this->_clientVector.size(); i++)
+	{	
+		if((this->_clientVector[i]->getNick()) == msg)
+			return this->_clientVector[i]->getSocket();
+	}
+	return -1;
+}
 bool	Server::similarNick(const char *nick){
 	
 	std::string nick_s(nick);
@@ -824,6 +835,34 @@ void	Server::checkUser(int fd, std::string cmd)
 		}
 	}
 	return; 
+}
+
+void Server::cmdPrvMessage(int fd, std::vector<std::string> vectorSplit)
+{
+	Client *myClient = findClientByFd(fd);
+	if (myClient->getBoolAuthenticate() == false)
+		return ;
+	else if (vectorSplit.size() < 3)
+		_logger.logOutput(ERR_NEEDMOREPARAMS);
+	else if (similarNick(vectorSplit[1].c_str()) != 1)
+		_logger.logOutput("ncik existe pas");
+	else if (vectorSplit[2][0] != ':')
+		_logger.logOutput(": oblige");
+	else if (takeSocket(vectorSplit[1]) != -1)
+	{
+		std::string msg;
+		int socket = takeSocket(vectorSplit[1]);
+		for (size_t i = 2; i < vectorSplit.size(); i++)
+		{
+			msg = msg + vectorSplit[i];
+			msg = msg + " ";
+		}
+		msg = msg.substr(1 , msg.size());
+		msg[msg.length() - 1] = '\n';
+		_logger.logPriv(myClient->getNick(), vectorSplit[1], msg);
+		send(socket, msg.c_str(), msg.size(), 0);
+	}
+	return;
 }
 
 bool	Server::isClientExisting(std::string user)

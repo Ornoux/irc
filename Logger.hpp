@@ -34,7 +34,9 @@ class Logger
             void logInput(const std::string& message) {
                 std::cout << CYAN << "[INPUT] " << message << RESET << std::endl;
             }
-
+            void logPriv(const std::string& nick, const std::string& toUser, const std::string& message) {
+                std::cout << RED << GRAS << "[PRIVMSG] " << nick <<" Send to "<< toUser << " --> " << message << RESET << std::endl;
+            }
             void logAccept(const std::string& message) {
                 std::cout << GRAS << MAGENTA << "[" << message << "] Accepted\n"<< RESET << std::endl;
             }

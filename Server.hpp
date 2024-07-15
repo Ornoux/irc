@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 16:13:05 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 17:08:19 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ class Server
 			void							cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit);
 			void							cmdTopic(int fd,std::vector<std::string> vectorSplit);
 			void							cmdInvite(int fd, std::vector<std::string> vectorSplit);
+			void							cmdPrvMessage(int fd, std::vector<std::string> vectorSplit);
 
 			// CMD CHANNELS
 
@@ -119,6 +120,7 @@ class Server
 			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
 			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
 			std::vector<std::string>		splitString(std::string cmd, std::string delimiter);
+			int								takeSocket(std :: string msg);
 	
 	private:
 			unsigned int					_port;

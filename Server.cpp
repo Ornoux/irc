@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 20:13:54 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:08:20 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,9 @@ void    Server::loop(char **av)
 				if (ret == 0)
 					DeleteClientFromServ(i);
 				else
+				{
 					getCmd(cs, std::string(buff));
+				}
 			}
 		}
 	}
@@ -200,6 +202,9 @@ void	Server::getCmd(int fd, std::string msg)
 	ret = msg.find(delimiter);
 	if (ret == std::string::npos)
 	{
+		if (msg[msg.length() - 1] != '\n')
+			_logger.logInput(msg);
+		
 		msg = stockCtrl(msg);
 		if (!(msg.empty())){
 			_logger.logInput(msg);

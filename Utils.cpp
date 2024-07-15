@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 16:13:20 by isouaidi          #+#    #+#             */
-/*   Updated: 2024/07/10 07:56:47 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/15 13:22:28 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ std::cout << "|| |___|_|_\\___|  |___/|___|___/  \\___\\___/|_|\\_|___/ ||" << s
 std::cout << "||                                                    ||" << std::endl;
 std::cout << "||====================================================||" << std::endl;
 std::cout << "|| by Isouaidi         Npatron         Tpenalba       || " << std::endl;
-std::cout << "||                    THE BOSS                        || " << std::endl;
+std::cout << "|| THE MONSTER         THE BOSS                        || " << std::endl;
 std::cout << "\\======================================================/\033[0m" << std::endl;
 
 }

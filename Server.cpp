@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 16:12:41 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:17:03 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,11 @@ void    Server::loop(char **av)
 	print_amazing();
 	std::cout << GRAS << "Server launched\n" << std::endl;
 	while (true)
-	{\
+	{
+		FD_ZERO(&readfds);
+		FD_SET(_socket, &readfds);
+		max_sd = _socket;
+		for (size_t i = 0; i < _clientVector.size(); i++)
 		{
 			cs = _clientVector[i]->getSocket();
 			if (cs > 0)

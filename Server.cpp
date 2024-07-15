@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 20:13:54 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:11:15 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,9 @@ void	Server::getCmd(int fd, std::string msg)
 	size_t ret;
 	ret = msg.find(delimiter);
 	if (ret == std::string::npos)
-	{
+	{	
+		if (msg[msg.length() - 1] != '\n')
+			_logger.logInput(msg);
 		msg = stockCtrl(msg);
 		if (!(msg.empty())){
 			_logger.logInput(msg);

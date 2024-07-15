@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 20:33:01 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/15 16:12:41 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,11 +102,7 @@ void    Server::loop(char **av)
 	print_amazing();
 	std::cout << GRAS << "Server launched\n" << std::endl;
 	while (true)
-	{
-		FD_ZERO(&readfds);
-		FD_SET(_socket, &readfds);
-		max_sd = _socket;
-		for (size_t i = 0; i < _clientVector.size(); i++)
+	{\
 		{
 			cs = _clientVector[i]->getSocket();
 			if (cs > 0)
@@ -162,7 +158,7 @@ void	Server::printClient()
 			std::cout << "PASS: Valid." << std::endl;
 		else
 			std::cout << "PASS: Invalid." << std::endl;
-		if (_clientVector[i]->getBoolNick() == true)
+		if (_clientVector[i]->getBoolNick() == true)\
 			std::cout << "NICK: Valid." << std::endl;
 		else
 			std::cout << "NICK: Invalid." << std::endl;
@@ -199,7 +195,9 @@ void	Server::getCmd(int fd, std::string msg)
 	size_t ret;
 	ret = msg.find(delimiter);
 	if (ret == std::string::npos)
-	{
+	{	
+		if (msg[msg.length() - 1] != '\n')
+			_logger.logInput(msg);
 		msg = stockCtrl(msg);
 		if (!(msg.empty())){
 			_logger.logInput(msg);

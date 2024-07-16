@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 16:37:47 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 10:54:16 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@
 #define ERR_KEYSET "Channel key already set"
 #define RPL_NOTOPIC "No topic is set"
 #define RPL_ENDOFNAMES "End of NAMES list"
+#define ERR_TOOMUCHCLIENTS "A limit is set to this channel. You can't join it"
 
 //NICK
 #define ERR_NONICKNAMEGIVEN "No nickname given"
@@ -64,6 +65,18 @@
 //INVITE
 #define ERR_NOSUCKNICK "No such nick/channel"
 
+//MODE
+#define ERR_UNKNOWNMODE "is unknown mode char to me"
+#define ERR_UMODEUNKNOWNFLAG "Unknown MODE flag"
+#define ERR_TOOMANYPARAMS "Too many parameters"
+#define ERR_NOKEYSET "There is no password set to this channel"
+#define ERR_BADLIMIT "3rg argument must be a valid number"
+#define ERR_LIMITIMPOSSIBLE "There is too many clients in this channel to set this limit"
+#define ERR_LIMITIALREADSET "Limit number clients is already set"
+#define ERR_CLIENTALREADYOPE "This client is already operator in this channel"
+#define ERR_CLIENTALREADYNORMAL "This client is already non-operator in this channel"
+#define ERR_CHANNELONLYINVITE "This channel is only-invite mode. You're not invited to join this channel"
+#define ERR_NOLIMITSET "You can't use MODE <channel> -l if there is no LIMIT set"
 class Server
 {
 	public:
@@ -106,7 +119,15 @@ class Server
 			void							cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit);
 			void							cmdTopic(int fd,std::vector<std::string> vectorSplit);
 			void							cmdInvite(int fd, std::vector<std::string> vectorSplit);
+			void							cmdMode(int fd, std::vector<std::string> vectorSplit);
+			void							cmdInfo(int fd, std::vector<std::string> vectorSplit);
 
+			void							handleModeI(Channel *myChannel, char sign);
+			void							handleModeT(Channel *myChannel, char sign);
+			void							handleModeK(Channel *myChannel, Client *senderClient, std::vector<std::string> vectorSplit, char sign);
+			void							handleModeL(Channel *myChannel, Client *senderClient, std::vector<std::string> vectorSplit, char sign);
+			void							handleModeO(Channel *myChannel, Client *senderClient, std::vector<std::string> vectorSplit, char sign);
+			
 			// CMD CHANNELS
 
 			void							handleChannels(int fd, std::string cmd, std::vector<std::string> vectorSplit);
@@ -139,5 +160,7 @@ int		int_max(char *str);
 bool	checkSpace(char c, const char *str);
 bool	checkNormeCara(const char *str);
 void	printStringVector(std::vector<std::string> myVector);
+bool	optModeIsGood(std::string opt, Client* myClient);
+bool	isDigitString(std::string nb);
 
 

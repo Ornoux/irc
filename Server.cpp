@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 16:53:37 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 11:27:59 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,12 +249,65 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			cmdTopic(fd, vectorSplit);
 		else if (vectorSplit[0] == "INVITE")
 			cmdInvite(fd, vectorSplit);
+		else if (vectorSplit[0] == "MODE")
+			cmdMode(fd, vectorSplit);
+		else if (vectorSplit[0] == "INFO")
+			cmdInfo(fd, vectorSplit);
 	}
+}
+
+void	Server::cmdInfo(int fd, std::vector<std::string> vectorSplit)
+{
+	Client *myClient = findClientByFd(fd);
+	if (vectorSplit.size() < 2)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		myClient->sendRPL("INVITE", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	else if (vectorSplit.size() > 2)
+	{
+		_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+		myClient->sendRPL("INVITE", ERR_TOOMANYPARAMS);		
+		return ;
+	}
+	else // GOOD PARAMS
+	{
+		std::string channelName = vectorSplit[1];
+		if (channelAlreadyExists(channelName) == false)
+		{
+			_logger.logOutput("ERR_NOSUCHCHANNEL sent to client");
+			myClient->sendRPL("INVITE", ERR_NOSUCHCHANNEL);		
+			return ;
+		}
+		else
+		{
+			Channel *myChannel = findChannelByName(channelName);
+			std::cout << "Name : " << myChannel->getName() << std::endl;
+			if (myChannel->hasPassword() == true)
+				std::cout << "Password : " << myChannel->getPassword() << std::endl;
+			std::cout << "Number clients : " << myChannel->getSizeChannel() << std::endl;
+			std::cout << "Number operators clients : " << myChannel->getSizeChannelOperators() << std::endl;
+			if (myChannel->hasTopic() == true)
+				std::cout << "Topic : " << myChannel->getTopic() << std::endl;
+			if (myChannel->getIsTopicRestricted() == true)
+				std::cout << "Topic restricted" << std::endl;
+			else
+				std::cout << "Topic non-restricted" << std::endl;
+			if (myChannel->getIsLimitedNumberClients() == true)
+				std::cout << "Number max clients : " << myChannel->getLimitNumberClient() << std::endl;
+			if (myChannel->getIsInviteOnly() == true)
+				std::cout << "Channel is only-invite mode" << std::endl;
+		}		
+	}
+	return ;
 }
 
 void	Server::cmdInvite(int fd, std::vector<std::string> vectorSplit)
 {
 	Client* senderClient = findClientByFd(fd);
+	if (senderClient->getBoolAuthenticate() == false)
+		return ;	
 	if (vectorSplit.size() == 1 || vectorSplit.size() == 2)
 	{
 		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
@@ -314,7 +367,9 @@ void	Server::cmdInvite(int fd, std::vector<std::string> vectorSplit)
 								Client* invitedClient = findClientByUser(invitedUserClient);
 								invitedClient->addInvitation(myChannel);
 								_logger.logOutput("Client found. Invitation sent.");
-								senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());		
+								senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());
+								invitedClient->sendRPL("You have been invited by " + senderClient->getUser() + " to join ", channelName.c_str());		
+	
 							}
 						}
 						else // SENDER CLIENT IS OPERATOR
@@ -322,13 +377,253 @@ void	Server::cmdInvite(int fd, std::vector<std::string> vectorSplit)
 							Client* invitedClient = findClientByUser(invitedUserClient);
 							invitedClient->addInvitation(myChannel);
 							_logger.logOutput("Client found. Invitation sent.");
-							senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());		
+							senderClient->sendRPL(senderClient->getUser() + " " + invitedUserClient + " ", channelName.c_str());
+							invitedClient->sendRPL("You have been invited by " + senderClient->getUser() + " to join ", channelName.c_str());
 						}
 					}
 				}
 			}
 		}
 	}	
+}
+
+void	Server::cmdMode(int fd, std::vector<std::string> vectorSplit)
+{
+	Client* senderClient = findClientByFd(fd);
+	if (senderClient->getBoolAuthenticate() == false)
+		return ;	
+	else if (vectorSplit.size() < 3)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		senderClient->sendRPL("INVITE", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	else if (vectorSplit.size() > 4)
+	{
+		_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+		senderClient->sendRPL("INVITE", ERR_TOOMANYPARAMS);		
+		return ;
+	}
+	else if (vectorSplit.size() == 3 || vectorSplit.size() == 4)
+	{
+		std::string channelName = vectorSplit[1];
+		std::string option = vectorSplit[2];
+		if (channelAlreadyExists(channelName) == false) // CHANNEL DOESN'T EXISTS
+		{
+			_logger.logOutput("ERR_NOSUCKNICK sent to client");
+			senderClient->sendRPL(channelName.c_str(), ERR_NOSUCKNICK);		
+			return ;
+		}	
+		else // CHANNEL EXISTS
+		{
+			Channel *myChannel = findChannelByName(channelName);
+			if (optModeIsGood(option, senderClient) == false)
+				return ;
+			else // GOOD OPT
+			{
+				if (myChannel->isClientOperator(senderClient->getUser()) == false)
+				{
+					_logger.logOutput("ERR_CHANOPRIVSNEEDED sent to client");
+					senderClient->sendRPL(channelName.c_str(), ERR_CHANOPRIVSNEEDED);		
+					return ;
+				}
+				else // CLIENT IS OPERATOR
+				{
+					char sign = option[0];
+					for (size_t i = 1; i < option.size(); i++)
+					{
+						if (option[i] == 'i')
+						{
+							if (vectorSplit.size() > 3)
+							{
+								_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+								senderClient->sendRPL(channelName.c_str(), ERR_TOOMANYPARAMS);		
+								return ;
+							}
+							handleModeI(myChannel, sign);
+						}
+						else if (option[i] == 't')
+						{
+							if (vectorSplit.size() > 3)
+							{
+								_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+								senderClient->sendRPL(channelName.c_str(), ERR_TOOMANYPARAMS);		
+								return ;
+							}
+							handleModeT(myChannel, sign);
+						}
+						else if (option[i] == 'k')
+							handleModeK(myChannel, senderClient, vectorSplit, sign);
+						else if (option[i] == 'l')
+							handleModeL(myChannel, senderClient, vectorSplit, sign);
+						else if (option[i] == 'o')
+							handleModeO(myChannel, senderClient, vectorSplit, sign);
+					}	
+				}
+				
+			}
+		}
+	}
+}
+
+void	Server::handleModeL(Channel *myChannel, Client* senderClient, std::vector<std::string> vectorSplit, char sign)
+{
+	if (sign == '+')
+	{
+		if (vectorSplit.size() != 4)
+		{
+			_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+			senderClient->sendRPL("MODE", ERR_NEEDMOREPARAMS);		
+			return ;
+		}
+		else
+		{
+			if (isDigitString(vectorSplit[3]) == false)
+			{
+				_logger.logOutput("ERR_BADLIMIT sent to client");
+				senderClient->sendRPL("MODE", ERR_BADLIMIT);		
+				return ;
+			}
+			else
+			{
+				size_t maxclient = atoi(vectorSplit[3].c_str());
+				if (myChannel->getSizeChannel() > maxclient)
+				{
+					_logger.logOutput("ERR_LIMITIMPOSSIBLE sent to client");
+					senderClient->sendRPL("MODE", ERR_LIMITIMPOSSIBLE);		
+					return ;
+				}
+				else
+				{
+					myChannel->setIsLimitedNumberClients(true);
+					myChannel->setLimitNumberClient(maxclient);
+					return ;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (vectorSplit.size() > 3)
+		{
+			_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+			senderClient->sendRPL("MODE", ERR_TOOMANYPARAMS);		
+			return ;
+		}
+		else
+		{
+			if (myChannel->getIsLimitedNumberClients() == true)
+			{
+				myChannel->setIsLimitedNumberClients(false);
+				return ;
+			}
+			else
+			{
+				_logger.logOutput("ERR_NOLIMITSET sent to client");
+				senderClient->sendRPL("MODE", ERR_NOLIMITSET);		
+				return ;
+			}
+		}		
+	}
+}
+
+void	Server::handleModeO(Channel *myChannel, Client* senderClient, std::vector<std::string> vectorSplit, char sign)
+{
+	if (vectorSplit.size() < 4)
+	{
+		_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+		senderClient->sendRPL("MODE", ERR_NEEDMOREPARAMS);		
+		return ;
+	}
+	std::string userDesigned = vectorSplit[3];
+	if (myChannel->isClientInChannel(userDesigned) == false) // NO CLIENTS
+	{
+		_logger.logOutput("ERR_NOSUCKNICK sent to client");
+		senderClient->sendRPL("MODE", ERR_NOSUCKNICK);		
+		return ;
+	}
+	else // CLIENT EXISTS
+	{
+		if (sign == '+')
+		{
+			Client *myClient = findClientByUser(userDesigned);
+			if (myChannel->isClientOperator(userDesigned) == true)
+			{
+				_logger.logOutput("ERR_CLIENTALREADYOPE sent to client");
+				senderClient->sendRPL("MODE", ERR_CLIENTALREADYOPE);		
+				return ;
+			}
+			else
+			{
+				myChannel->addClientOperatorToChannel(myClient);
+				return ;
+			}
+		}
+		else
+		{
+			if (myChannel->isClientOperator(userDesigned) == false)
+			{
+				_logger.logOutput("ERR_CLIENTALREADYNORMAL sent to client");
+				senderClient->sendRPL("MODE", ERR_CLIENTALREADYNORMAL);		
+				return ;
+			}
+			else
+			{
+				myChannel->removeClientOperator(userDesigned);
+				return ;
+			}
+		}
+	}
+}
+
+void	Server::handleModeI(Channel *myChannel, char sign)
+{
+	if (sign == '+')
+		myChannel->setIsInviteOnly(true);
+	else
+		myChannel->setIsInviteOnly(false);
+}
+
+void	Server::handleModeT(Channel *myChannel, char sign)
+{
+	if (sign == '+')
+		myChannel->setIsTopicRestricted(true);
+	else
+		myChannel->setIsTopicRestricted(false);
+}
+
+void	Server::handleModeK(Channel *myChannel, Client *senderClient, std::vector<std::string> vectorSplit, char sign)
+{
+	if (sign == '+') 
+	{
+		if (vectorSplit.size() < 4) // NO PASSWORD ENTERED
+		{
+			_logger.logOutput("ERR_NEEDMOREPARAMS sent to client");
+			senderClient->sendRPL("MODE", ERR_NEEDMOREPARAMS);		
+			return ;
+		}
+		else
+		{
+			std::string newPassword = vectorSplit[3];
+			myChannel->setPassword(newPassword);
+			myChannel->setThereIsPassword(true);
+			return ;
+		}
+	}
+	else // SIGN IS '-'
+	{
+		if (vectorSplit.size() != 3)
+		{
+			_logger.logOutput("ERR_TOOMANYPARAMS sent to client");
+			senderClient->sendRPL("MODE", ERR_TOOMANYPARAMS);		
+			return ;
+		}
+		else
+		{
+			myChannel->setThereIsPassword(false);
+			return ;
+		}
+	}
 }
 
 void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSplit)
@@ -448,7 +743,7 @@ void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 			}
 			else // 3 ARGS LIKE ./TOPIC <channel> <NEW CHANNEL??>
 			{
-				if (myChannel->isClientOperator(myClient->getUser()) == false) // CLIENT NON-OPERATOR
+				if (myChannel->isClientOperator(myClient->getUser()) == false && myChannel->getIsTopicRestricted() == true) // CLIENT NON-OPERATOR
 				{
 					_logger.logOutput("ERR_CHANOPRIVSNEEDED sent to client");
 					myClient->sendRPL(nameChannel, ERR_CHANOPRIVSNEEDED);		
@@ -459,7 +754,7 @@ void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 					if (vectorSplit[2].size() == 0)
 					{
 						myChannel->setBoolTopic(false);
-						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic);
+						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic + "\n");
 						return ;
 					}
 					else
@@ -467,7 +762,7 @@ void	Server::cmdTopic(int fd, std::vector<std::string> vectorSplit)
 						topic = vectorSplit[2];
 						myChannel->setBoolTopic(true);
 						myChannel->setTopic(topic);
-						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic);
+						myChannel->sendNotifToClients(myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.27" + " TOPIC " + nameChannel + " :" + topic + "\n");
 						return ;
 					}
 				}
@@ -547,6 +842,15 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 		else // CANAL EXISTS
 		{
 			Channel *myChannel = findChannelByName(channelName);
+			if (myChannel->getIsLimitedNumberClients() == true)
+			{
+				if (myChannel->getSizeChannel() == myChannel->getLimitNumberClient())
+				{
+					_logger.logOutput("ERR_TOOMUCHCLIENTS sent to client");
+					myClient->sendRPL(myClient->getNick() + " " + namesChannels[i], ERR_TOOMUCHCLIENTS);
+					return ;
+				}
+			}
 			if (myChannel->hasPassword() == true) // IF CANAL NEEDS PASSWORD
 			{
 				if (passwordGived == true)
@@ -559,22 +863,53 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 							myClient->sendRPL(channelName, ERR_BADCHANNELKEY);
 							return ;
 						}
-						else
+						else // GOOD PASSWORD
 						{
-							std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
-							myChannel->addClientToChannel(myClient);
-							_logger.logOutput("RPL_NAMREPLY sent to client");
-							myChannel->sendRPL_NAMREPLY(fd);
-							myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
-							if (myChannel->hasTopic() == true)
+							if (myChannel->getIsInviteOnly() == true)
 							{
-								myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
-								_logger.logOutput("Channel topic sent to client");
+								
+								if (myClient->isInvitedToChannel(channelName) == false)
+								{
+									_logger.logOutput(ERR_CHANNELONLYINVITE);
+									myClient->sendRPL(channelName, ERR_CHANNELONLYINVITE);
+									return ;
+								}
+								else
+								{
+									std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+									myChannel->addClientToChannel(myClient);
+									_logger.logOutput("RPL_NAMREPLY sent to client");
+									myChannel->sendRPL_NAMREPLY(fd);
+									myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+									if (myChannel->hasTopic() == true)
+									{
+										myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+										_logger.logOutput("Channel topic sent to client");
+									}
+									else
+									{
+										myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+										_logger.logOutput("RPL_NOTOPIC sent");
+									}
+								}
 							}
 							else
 							{
-								myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
-								_logger.logOutput("RPL_NOTOPIC sent");
+								std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+								myChannel->addClientToChannel(myClient);
+								_logger.logOutput("RPL_NAMREPLY sent to client");
+								myChannel->sendRPL_NAMREPLY(fd);
+								myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+								if (myChannel->hasTopic() == true)
+								{
+									myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+									_logger.logOutput("Channel topic sent to client");
+								}
+								else
+								{
+									myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+									_logger.logOutput("RPL_NOTOPIC sent");
+								}
 							}
 						}
 					}
@@ -599,29 +934,55 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 				}
 				else
 				{
-					myChannel->addClientToChannel(myClient);
-					myClient->addToChannel(myChannel);
-					
-					if (myChannel->hasTopic() == true)
+					if (myChannel->getIsInviteOnly() == true)
 					{
-						myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
-						_logger.logOutput("Channel topic sent to client");
-						_logger.logOutput("RPL_NAMREPLY sent to client");
-						myChannel->sendRPL_NAMREPLY(fd);
-						myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+						
+						if (myClient->isInvitedToChannel(channelName) == false)
+						{
+							_logger.logOutput(ERR_CHANNELONLYINVITE);
+							myClient->sendRPL(channelName, ERR_CHANNELONLYINVITE);
+							return ;
+						}
+						else
+						{
+							std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+							myChannel->addClientToChannel(myClient);
+							_logger.logOutput("RPL_NAMREPLY sent to client");
+							myChannel->sendRPL_NAMREPLY(fd);
+							myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+							if (myChannel->hasTopic() == true)
+							{
+								myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+								_logger.logOutput("Channel topic sent to client");
+							}
+							else
+							{
+								myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+								_logger.logOutput("RPL_NOTOPIC sent");
+							}
+						}
 					}
 					else
 					{
-						myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
-						_logger.logOutput("RPL_NOTOPIC sent");
+						std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
+						myChannel->addClientToChannel(myClient);
 						_logger.logOutput("RPL_NAMREPLY sent to client");
 						myChannel->sendRPL_NAMREPLY(fd);
 						myClient->sendRPL(myChannel->getName(), RPL_ENDOFNAMES);
+						if (myChannel->hasTopic() == true)
+						{
+							myClient->sendRPL(myChannel->getName(), myChannel->getTopic().c_str());
+							_logger.logOutput("Channel topic sent to client");
+						}
+						else
+						{
+							myClient->sendRPL(myChannel->getName(), RPL_NOTOPIC);
+							_logger.logOutput("RPL_NOTOPIC sent");
+						}
 					}
 				}
 			}
 		}
-		
 	}	
 }
 
@@ -935,4 +1296,55 @@ void	printStringVector(std::vector<std::string> myVector)
 		std::cout << "[" << i << "]" << myVector[i] << std::endl;
 	}
 	return ;
+}
+
+bool	optModeIsGood(std::string opt, Client* myClient)
+{
+	if (opt.size() < 2 || (opt[0] != '-' && opt[0] != '+'))
+	{
+		myClient->sendRPL("MODE", ERR_UMODEUNKNOWNFLAG);
+		return (false);
+	}
+
+	int	count_i = 0;
+	int count_t = 0;
+	int count_k = 0;
+	int	count_o = 0;
+	int count_l = 0;
+	for (size_t i = 1; i < opt.size(); i++)
+	{
+		if (opt[i] != 'i' && opt[i] != 't' && opt[i] != 'k' && opt[i] != 'l' 
+			&& opt[i] != 'o')
+		{
+			std::string msg = "char : " + opt[i];
+			myClient->sendRPL(msg, ERR_UNKNOWNMODE);
+			return (false);
+		}
+		else if (opt[i] == 'i')
+			count_i++;
+		else if (opt[i] == 't')
+			count_t++;
+		else if (opt[i] == 'k')
+			count_k++;
+		else if (opt[i] == 'l')
+			count_l++;
+		else if (opt[i] == 'o')
+			count_o++;		
+	}
+	if (count_i > 1 || count_t > 1 || count_o > 1 || count_l > 1 || count_k > 1)
+	{
+		myClient->sendRPL("MODE", ERR_UMODEUNKNOWNFLAG);
+		return (false);
+	}
+	return (true);
+}
+
+bool	isDigitString(std::string nb)
+{
+	for (size_t i = 0; i < nb.size(); i++)
+	{
+		if (!isdigit(nb[i]))
+			return (false);
+	}
+	return (true);
 }

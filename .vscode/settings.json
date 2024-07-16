@@ -49,7 +49,9 @@
 		"streambuf": "cpp",
 		"typeinfo": "cpp",
 		"optional": "cpp",
-		"ranges": "cpp"
+		"ranges": "cpp",
+		"map": "cpp",
+		"span": "cpp"
 	},
 	"C_Cpp.errorSquiggles": "disabled"
 }

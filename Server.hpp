@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
+/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 14:32:52 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 15:39:40 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 
 #pragma once
@@ -64,6 +65,7 @@
 
 //INVITE
 #define ERR_NOSUCKNICK "No such nick/channel"
+#define ERR_NOTEXTTOSEND "No text to send"
 
 //MODE
 #define ERR_UNKNOWNMODE "is unknown mode char to me"
@@ -122,6 +124,7 @@ class Server
 			void							cmdInvite(int fd, std::vector<std::string> vectorSplit);
 			void							cmdMode(int fd, std::vector<std::string> vectorSplit);
 			void							cmdInfo(int fd, std::vector<std::string> vectorSplit);
+			void							cmdPrvMessage(int fd, std::vector<std::string> vectorSplit);
 
 			void							handleModeI(Channel *myChannel, char sign);
 			void							handleModeT(Channel *myChannel, char sign);
@@ -140,6 +143,7 @@ class Server
 			std::vector<std::string>		splitCmdNameChannels(std::string cmd);
 			std::vector<std::string>		splitCmdPasswordChannels(std::string cmd);
 			std::vector<std::string>		splitString(std::string cmd, std::string delimiter);
+			int								takeSocket(std :: string msg);
 	
 	private:
 			unsigned int					_port;

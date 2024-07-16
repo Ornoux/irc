@@ -6,14 +6,14 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 16:42:22 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 11:14:20 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Channel.hpp"
 #include "Client.hpp"
 
-Channel::Channel() : _thereIsPassword(false), _thereIsTopic(false), _isInviteOnly(false), _name("NULL"), _password("NULL"), _topic("NULL")
+Channel::Channel() : _thereIsPassword(false), _thereIsTopic(false), _isInviteOnly(false), _isTopicRestricted(false), _isLimitedNumberClients(false), _name("NULL"), _password("NULL"), _topic("NULL")
 {
 	return ;
 }
@@ -101,6 +101,20 @@ void	Channel::removeClient(std::string user)
 			return ;
 		}
 	}
+	for (size_t i = 0; i < _clientsOperators.size(); i++)
+	{
+		if (user == _clientsOperators[i]->getUser())
+		{
+			std::cout << "CLIENT TROUVER OPERA" << std::endl;
+			_clientsOperators.erase(_clientsOperators.begin() + i);
+			return ;
+		}
+	}
+	return ;
+}
+
+void	Channel::removeClientOperator(std::string user)
+{
 	for (size_t i = 0; i < _clientsOperators.size(); i++)
 	{
 		if (user == _clientsOperators[i]->getUser())

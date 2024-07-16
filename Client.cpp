@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 16:12:58 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/16 13:57:02 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,15 @@ void	Client::removeClientChannel(std::string channel)
 	return ;
 }
 
+bool	Client::isInvitedToChannel(std::string channelName)
+{
+	for (size_t i = 0; i < _channelsInvited.size(); i++)
+	{
+		if (channelName == _channelsInvited[i]->getName())
+			return (true);
+	}
+	return (false);
+}
 
 void	Client::sendRPL(std::string base, const char *rpl)
 {

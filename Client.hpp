@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/14 15:43:20 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 10:22:55 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ class Client
 			void		sendRPL(std::string base, const char *error_msg);
 			void		printInfos(void);
 			void		addInvitation(Channel* _channel) {_channelsInvited.push_back(_channel);}
+			bool		isInvitedToChannel(std::string channelName);
 
 	private:
 			int			_socket;

@@ -6,7 +6,7 @@
 #    By: npatron <npatron@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/03 16:53:15 by npatron           #+#    #+#              #
-#    Updated: 2024/07/12 16:51:41 by npatron          ###   ########.fr        #
+#    Updated: 2024/07/16 15:57:05 by npatron          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,7 @@ GREEN1 =\033[38;5;46m
 GREEN = \033[38;5;85m
 
 FICH_COUNT = 0
-NBR_TOT_FICHIER = 18
+NBR_TOT_FICHIER = 5
 NBR_COMPILER = ${shell expr 100 \* ${FICH_COUNT} / ${NBR_TOT_FICHIER}}
 BAR =  ${shell expr 23 \* ${FICH_COUNT} / ${NBR_TOT_FICHIER}}
 

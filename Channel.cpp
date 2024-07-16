@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 16:32:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 11:14:20 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 18:08:42 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,6 @@ void	Channel::removeClient(std::string user)
 	{
 		if (user == _clientsChannel[i]->getUser())
 		{
-			std::cout << "CLIENT TROUVER" << std::endl;
 			_clientsChannel.erase(_clientsChannel.begin() + i);
 			return ;
 		}
@@ -105,7 +104,6 @@ void	Channel::removeClient(std::string user)
 	{
 		if (user == _clientsOperators[i]->getUser())
 		{
-			std::cout << "CLIENT TROUVER OPERA" << std::endl;
 			_clientsOperators.erase(_clientsOperators.begin() + i);
 			return ;
 		}
@@ -119,7 +117,6 @@ void	Channel::removeClientOperator(std::string user)
 	{
 		if (user == _clientsOperators[i]->getUser())
 		{
-			std::cout << "CLIENT TROUVER OPERA" << std::endl;
 			_clientsOperators.erase(_clientsOperators.begin() + i);
 			return ;
 		}
@@ -143,7 +140,6 @@ void	Channel::sendRPL_NAMREPLY(int fd)
 	std::string list;
 	std::string username;
 	list = _name + " :";
-	std::cout << _clientsChannel.size() << std::endl;
 	for (size_t i = 0; i < _clientsChannel.size(); i++)
 	{
 		username = _clientsChannel[i]->getUser();

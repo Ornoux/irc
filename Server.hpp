@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 15:39:40 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/16 17:59:10 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ class Server
 			
 			// CMD AUTH
 
-			std::string 					stockCtrl(std::string msg);
 			bool							similarNick(const char *nick);
 			void							checkPass(int fd, std::string cmd);
 			void							checkNick(int fd, std::string cmd);
@@ -145,6 +144,12 @@ class Server
 			std::vector<std::string>		splitString(std::string cmd, std::string delimiter);
 			int								takeSocket(std :: string msg);
 	
+			//BOT
+			void							executeBot();
+
+			//LEAKS
+			void							deleteEverything();
+
 	private:
 			unsigned int					_port;
 			int								_socket;
@@ -153,7 +158,6 @@ class Server
 			Logger							_logger;
 			std::vector<Client*>			_clientVector;
 			std::vector<Channel*> 			_channelVector;
-			std::string 					_ctrl;
 };
 
 // UTILS

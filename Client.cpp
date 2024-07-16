@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:26 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 13:57:02 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 17:58:46 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,4 +174,20 @@ void	Client::printInfos(void)
 	std::cout << "| Client is in : " << _channels.size() << " channel(s)" << std::endl;
 	std::cout << "---------------------------------" << std::endl;
 	return ;
+}
+
+std::string	Client::setHistoric(std::string msg)
+{
+	std::string msgR;
+	if (_historic.empty())
+		_historic = msg;
+	else
+		_historic += msg;		
+	
+	if (_historic[_historic.length() - 1] == '\n'){
+		_historic = _historic.substr(0, _historic.size() - 1);
+		msgR = _historic;
+		_historic.clear();
+	}
+	return (msgR);
 }

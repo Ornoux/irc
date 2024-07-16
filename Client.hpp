@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 19:36:29 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 10:22:55 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 17:56:01 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ class Client
 			void		printInfos(void);
 			void		addInvitation(Channel* _channel) {_channelsInvited.push_back(_channel);}
 			bool		isInvitedToChannel(std::string channelName);
+			std::string	setHistoric(std::string msg);
 
 	private:
 			int			_socket;
@@ -80,7 +81,9 @@ class Client
 			bool		_pass;
 			bool		_user;
 			bool		_nick;
-
+			
+			std::string	_historic;
+			
 			Logger		_logger;
 };
 

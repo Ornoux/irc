@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
+/*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 15:39:32 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/16 18:08:21 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,23 @@ void    Server::loop(char **av)
 			}
 		}
 	}
+	deleteEverything();
+	close(_socket);
 	return ;
+}
+
+void	Server::deleteEverything()
+{
+	for (size_t i = 0; i < _clientVector.size(); i++)
+	{
+		close(_clientVector[i]->getSocket());
+		delete _clientVector[i];
+	}
+	
+	for (size_t i = 0; i < _channelVector.size(); i++)
+	{
+		delete _channelVector[i];
+	}
 }
 
 Client*	Server::AddClientToVector()
@@ -178,34 +194,22 @@ void	Server::printClient()
 	return ;
 }
 
-std::string Server::stockCtrl(std::string msg){
-	std::string msgR;
-	if (_ctrl.empty()){
-		_ctrl = msg;
-	}
-	else{
-		_ctrl = _ctrl + msg;		
-	}
-	
-	if (_ctrl[_ctrl.length() - 1] == '\n'){
-		_ctrl = _ctrl.substr(0, _ctrl.size() - 1);
-		msgR = _ctrl;
-		_ctrl.clear();
-	}
-	return (msgR);
-}
-
 void	Server::getCmd(int fd, std::string msg)
 {
+	Client *myClient = findClientByFd(fd);
+	
 	std::vector<std::string> vectorInput;
 	std::string delimiter = "\r\n";
 	size_t ret;
+	
 	ret = msg.find(delimiter);
-	if (ret == std::string::npos)
+	if (msg[msg.size() - 1] == '\r')
+		vectorInput.push_back(msg);
+	else if (ret == std::string::npos)
 	{	
 		if (msg[msg.length() - 1] != '\n')
 			_logger.logInput(msg);
-		msg = stockCtrl(msg);
+		msg = myClient->setHistoric(msg);
 		if (!(msg.empty())){
 			_logger.logInput(msg);
 			vectorInput.push_back(msg);
@@ -279,7 +283,19 @@ void	Server::treatVectorCmd(int fd, std::vector<std::string> vectorCmd)
 			cmdInfo(fd, vectorSplit);
 		else if (vectorSplit[0] == "PRIVMSG")
 			cmdPrvMessage(fd, vectorSplit);
+		else if (vectorSplit[0] == "BOT\r")
+			executeBot();
 	}
+}
+
+void	Server::executeBot(void)
+{
+	for (size_t i = 0; i < _clientVector.size(); i++)
+	{
+		if (_clientVector[i]->getBoolAuthenticate() == true)
+			send(_clientVector[i]->getSocket(), "Hello, I just want the bonus\r\n", 31, 0);
+	}
+	return ;
 }
 
 void	Server::cmdInfo(int fd, std::vector<std::string> vectorSplit)
@@ -691,7 +707,6 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 			else // CLIENT IS OPERATOR
 			{
 				std::vector<std::string> userKicked = splitString(vectorSplit[2], ",");
-				printStringVector(userKicked);
 				for (size_t i = 0; i < userKicked.size(); i++)
 				{
 					if (myChannel->isClientInChannel(userKicked[i]) == false) // USER KICK INEXISTANT
@@ -706,7 +721,7 @@ void	Server::cmdKick(int fd, std::string cmd, std::vector<std::string> vectorSpl
 						_logger.logInput(myClient->getUser() + " :" + cmd);
 						myChannel->removeClient(userKicked[i]);
 						kickClient->removeClientChannel(nameChannel);
-						std::cout << userKicked[i] << " remove from " << nameChannel << std::endl;
+						_logger.logInfo(userKicked[i] + " remove from " + nameChannel + "\n");
 					}
 				}
 				
@@ -902,7 +917,6 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 								}
 								else
 								{
-									std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 									myChannel->addClientToChannel(myClient);
 									_logger.logOutput("RPL_NAMREPLY sent to client");
 									myChannel->sendRPL_NAMREPLY(fd);
@@ -921,7 +935,6 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 							}
 							else
 							{
-								std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 								myChannel->addClientToChannel(myClient);
 								_logger.logOutput("RPL_NAMREPLY sent to client");
 								myChannel->sendRPL_NAMREPLY(fd);
@@ -971,7 +984,6 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 						}
 						else
 						{
-							std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 							myChannel->addClientToChannel(myClient);
 							_logger.logOutput("RPL_NAMREPLY sent to client");
 							myChannel->sendRPL_NAMREPLY(fd);
@@ -990,7 +1002,6 @@ void	Server::handleChannels(int fd, std::string cmd, std::vector<std::string> ve
 					}
 					else
 					{
-						std::cout << "Client " << myClient->getUser() << " successfully added to " << channelName << std::endl;
 						myChannel->addClientToChannel(myClient);
 						_logger.logOutput("RPL_NAMREPLY sent to client");
 						myChannel->sendRPL_NAMREPLY(fd);
@@ -1162,7 +1173,7 @@ void	Server::checkUser(int fd, std::string cmd)
 	size_t end = cmd_s.find(' ', start);
 	if (end == std::string::npos)
 	{
-		myClient->sendRPL("NICK", ERR_NEEDMOREPARAMS);
+		myClient->sendRPL("USER", ERR_NEEDMOREPARAMS);
 		return ;
 	}
 	
@@ -1182,7 +1193,7 @@ void	Server::checkUser(int fd, std::string cmd)
 		if (strncmp((cmd_c + 4), " " , 1) != 0)
 			return;
 		else if (strlen(cmd_c) - 5 == 0)
-			myClient->sendRPL("NICK", ERR_ERRONEUSNICKNAME);
+			myClient->sendRPL("USER", ERR_ERRONEUSNICKNAME);
 		else if (checkNormeCara(ureal_c) == 1 || checkNormeCara(real_c) == 1
 			|| ( checkSpace(' ', ureal_c) == 1 ) || (checkSpace(' ', real_c) == 1))
 			return;
@@ -1205,27 +1216,43 @@ void Server::cmdPrvMessage(int fd, std::vector<std::string> vectorSplit)
 	if (myClient->getBoolAuthenticate() == false)
 		return ;
 	else if (vectorSplit.size() < 3)
-		_logger.logOutput(ERR_NEEDMOREPARAMS);
-	else if (similarNick(vectorSplit[1].c_str()) != 1)
-		_logger.logOutput(ERR_NOSUCKNICK);
+		myClient->sendRPL("PRIVMSG", ERR_NEEDMOREPARAMS);
+	else if (vectorSplit[1] == myClient->getNick())
+		myClient->sendRPL("PRIVMSG", ERR_NOSUCKNICK);
 	else if (vectorSplit[2][0] != ':')
-		_logger.logOutput(ERR_NOTEXTTOSEND);
+		myClient->sendRPL("PRIVMSG", ERR_NOTEXTTOSEND);
 	else if (vectorSplit[2][1] == '\0')
-		_logger.logOutput(ERR_NOTEXTTOSEND);
-	else if (takeSocket(vectorSplit[1]) != -1)
+		myClient->sendRPL("PRIVMSG", ERR_NOTEXTTOSEND);		
+	else if (similarNick(vectorSplit[1].c_str()) == true && vectorSplit[1] != myClient->getNick()) // IS A CLIENT
 	{
 		std::string msg;
+		msg = myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.1 " + "PRIVMSG " + vectorSplit[1] + " ";
 		int socket = takeSocket(vectorSplit[1]);
 		for (size_t i = 2; i < vectorSplit.size(); i++)
 		{
 			msg = msg + vectorSplit[i];
 			msg = msg + " ";
 		}
-		msg = msg.substr(1 , msg.size());
 		msg[msg.length() - 1] = '\n';
 		_logger.logPriv(myClient->getNick(), vectorSplit[1], msg);
 		send(socket, msg.c_str(), msg.size(), 0);
 	}
+	else if (channelAlreadyExists(vectorSplit[1]) == true)
+	{
+		std::string msg;
+		Channel *myChannel = findChannelByName(vectorSplit[1]);
+
+		msg = myClient->getNick() + "!" + myClient->getUser() + "@" + "127.0.0.1 " + "PRIVMSG " + vectorSplit[1] + " ";
+		for (size_t i = 2; i < vectorSplit.size(); i++)
+		{
+			msg = msg + vectorSplit[i];
+			msg = msg + " ";
+		}
+		msg[msg.length() - 1] = '\n';
+		_logger.logPriv(myClient->getNick(), vectorSplit[1], msg);
+		myChannel->sendNotifToClients(msg);
+	}
+	
 	return;
 }
 
@@ -1275,7 +1302,6 @@ void	Server::DeleteClientFromServ(int i)
 	{
 		if (_clientVector[i]->isInChannel(_channelVector[j]->getName()) == true)
 		{
-			std::cout << "Client deleted from " << _channelVector[j]->getName();
 			_channelVector.erase(_channelVector.begin() + j);
 		}
 	}

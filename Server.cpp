@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 19:26:44 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/16 15:13:04 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -845,9 +845,11 @@ void Server::cmdPrvMessage(int fd, std::vector<std::string> vectorSplit)
 	else if (vectorSplit.size() < 3)
 		_logger.logOutput(ERR_NEEDMOREPARAMS);
 	else if (similarNick(vectorSplit[1].c_str()) != 1)
-		_logger.logOutput("ncik existe pas");
+		_logger.logOutput(ERR_NOSUCKNICK);
 	else if (vectorSplit[2][0] != ':')
-		_logger.logOutput(": oblige");
+		_logger.logOutput(ERR_NOTEXTTOSEND);
+	else if (vectorSplit[2][1] == '\0')
+		_logger.logOutput(ERR_NOTEXTTOSEND);
 	else if (takeSocket(vectorSplit[1]) != -1)
 	{
 		std::string msg;

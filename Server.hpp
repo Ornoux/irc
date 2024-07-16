@@ -6,7 +6,7 @@
 /*   By: isouaidi <isouaidi@student.42nice.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 13:56:59 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/15 17:08:19 by isouaidi         ###   ########.fr       */
+/*   Updated: 2024/07/16 15:09:59 by isouaidi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@
 
 //INVITE
 #define ERR_NOSUCKNICK "No such nick/channel"
+#define ERR_NOTEXTTOSEND "No text to send"
 
 class Server
 {

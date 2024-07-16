@@ -6,7 +6,7 @@
 /*   By: npatron <npatron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/04 14:13:39 by npatron           #+#    #+#             */
-/*   Updated: 2024/07/16 13:57:14 by npatron          ###   ########.fr       */
+/*   Updated: 2024/07/16 13:59:27 by npatron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1337,7 +1337,7 @@ bool	optModeIsGood(std::string opt, Client* myClient)
 		if (opt[i] != 'i' && opt[i] != 't' && opt[i] != 'k' && opt[i] != 'l' 
 			&& opt[i] != 'o')
 		{
-			std::string msg = "char : " + opt[i];
+			std::string msg = "char : " + opt;
 			myClient->sendRPL(msg, ERR_UNKNOWNMODE);
 			return (false);
 		}
